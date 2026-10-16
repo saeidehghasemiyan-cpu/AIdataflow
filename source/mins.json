@@ -1,0 +1,310 @@
+[
+ {
+  "i": 0,
+  "title": "Before we start",
+  "mins": 5,
+  "steps": [
+   "watch",
+   "learn"
+  ],
+  "games": 0,
+  "info": 0
+ },
+ {
+  "i": 1,
+  "title": "Chapter 1. What is data?",
+  "mins": 19,
+  "steps": [
+   "story",
+   "learn",
+   "words",
+   "check",
+   "chal"
+  ],
+  "games": 3,
+  "info": 3
+ },
+ {
+  "i": 2,
+  "title": "Chapter 2. Where data lives and how it travels",
+  "mins": 24,
+  "steps": [
+   "story",
+   "learn",
+   "words",
+   "check",
+   "chal"
+  ],
+  "games": 3,
+  "info": 4
+ },
+ {
+  "i": 3,
+  "title": "Chapter 3. What is AI, really?",
+  "mins": 14,
+  "steps": [
+   "story",
+   "learn",
+   "words",
+   "check",
+   "chal"
+  ],
+  "games": 3,
+  "info": 2
+ },
+ {
+  "i": 4,
+  "title": "Chapter 4. The map",
+  "mins": 9,
+  "steps": [
+   "learn",
+   "check",
+   "chal"
+  ],
+  "games": 3,
+  "info": 1
+ },
+ {
+  "i": 5,
+  "title": "Chapter 5. Station 1: The plan",
+  "mins": 11,
+  "steps": [
+   "story",
+   "learn",
+   "words",
+   "check",
+   "chal"
+  ],
+  "games": 2,
+  "info": 0
+ },
+ {
+  "i": 6,
+  "title": "Chapter 6. Station 2: Collection",
+  "mins": 12,
+  "steps": [
+   "story",
+   "learn",
+   "words",
+   "check",
+   "chal"
+  ],
+  "games": 2,
+  "info": 1
+ },
+ {
+  "i": 7,
+  "title": "Chapter 7. Station 3: The raw warehouse",
+  "mins": 13,
+  "steps": [
+   "story",
+   "learn",
+   "words",
+   "check",
+   "chal"
+  ],
+  "games": 3,
+  "info": 2
+ },
+ {
+  "i": 8,
+  "title": "Chapter 8. Station 4: The wash",
+  "mins": 15,
+  "steps": [
+   "story",
+   "learn",
+   "words",
+   "check",
+   "chal"
+  ],
+  "games": 3,
+  "info": 1
+ },
+ {
+  "i": 9,
+  "title": "Chapter 9. Station 5: The sticker room",
+  "mins": 14,
+  "steps": [
+   "story",
+   "learn",
+   "words",
+   "check",
+   "chal"
+  ],
+  "games": 3,
+  "info": 1
+ },
+ {
+  "i": 10,
+  "title": "Chapter 10. Station 6: Words become numbers",
+  "mins": 16,
+  "steps": [
+   "story",
+   "learn",
+   "words",
+   "check",
+   "chal"
+  ],
+  "games": 4,
+  "info": 2
+ },
+ {
+  "i": 11,
+  "title": "Chapter 11. Station 7: The three boxes",
+  "mins": 14,
+  "steps": [
+   "story",
+   "learn",
+   "words",
+   "check",
+   "chal"
+  ],
+  "games": 3,
+  "info": 1
+ },
+ {
+  "i": 12,
+  "title": "Chapter 12. Station 8: The school",
+  "mins": 21,
+  "steps": [
+   "story",
+   "learn",
+   "words",
+   "check",
+   "chal"
+  ],
+  "games": 4,
+  "info": 2
+ },
+ {
+  "i": 13,
+  "title": "Chapter 13. Inside the training factory",
+  "mins": 16,
+  "steps": [
+   "story",
+   "learn",
+   "words",
+   "check",
+   "chal"
+  ],
+  "games": 2,
+  "info": 3
+ },
+ {
+  "i": 14,
+  "title": "Chapter 14. Station 9: Finishing school",
+  "mins": 14,
+  "steps": [
+   "story",
+   "learn",
+   "words",
+   "check",
+   "chal"
+  ],
+  "games": 2,
+  "info": 2
+ },
+ {
+  "i": 15,
+  "title": "Chapter 15. Station 10: The exams",
+  "mins": 16,
+  "steps": [
+   "story",
+   "learn",
+   "words",
+   "check",
+   "chal"
+  ],
+  "games": 3,
+  "info": 2
+ },
+ {
+  "i": 16,
+  "title": "Chapter 16. Station 11: Moving day",
+  "mins": 14,
+  "steps": [
+   "story",
+   "learn",
+   "words",
+   "check",
+   "chal"
+  ],
+  "games": 2,
+  "info": 3
+ },
+ {
+  "i": 17,
+  "title": "Chapter 17. Station 12: The watchtower",
+  "mins": 13,
+  "steps": [
+   "story",
+   "learn",
+   "words",
+   "check",
+   "chal"
+  ],
+  "games": 2,
+  "info": 3
+ },
+ {
+  "i": 18,
+  "title": "Chapter 18. Station 13: The last stop",
+  "mins": 17,
+  "steps": [
+   "story",
+   "learn",
+   "words",
+   "check",
+   "chal"
+  ],
+  "games": 4,
+  "info": 2
+ },
+ {
+  "i": 19,
+  "title": "Chapter 19. The guardians along the road",
+  "mins": 14,
+  "steps": [
+   "story",
+   "learn",
+   "words",
+   "check",
+   "chal"
+  ],
+  "games": 2,
+  "info": 2
+ },
+ {
+  "i": 20,
+  "title": "Chapter 20. Pip's whole journey on one page",
+  "mins": 8,
+  "steps": [
+   "learn",
+   "chal"
+  ],
+  "games": 2,
+  "info": 2
+ },
+ {
+  "i": 21,
+  "title": "Chapter 21. The master dictionary",
+  "mins": 17,
+  "steps": [
+   "dict",
+   "chal"
+  ],
+  "games": 1,
+  "info": 0
+ },
+ {
+  "i": 22,
+  "title": "Chapter 22. The master quiz",
+  "mins": 9,
+  "steps": [
+   "check",
+   "learn"
+  ],
+  "games": 0,
+  "info": 0
+ }
+]
