@@ -214,3 +214,5 @@ body::before{content:"";position:fixed;inset:-20vmax;z-index:-1;pointer-events:n
 @media (max-width:620px){.mhero{aspect-ratio:10/4}.mh-sun{width:36px;height:36px}}
 
 .pg.endvid h2{margin-bottom:.3em}.pg.endvid p{margin-bottom:1em}.pg.endvid .vclip video{width:100%;border-radius:16px;display:block}
+
+.stage.fin .finvid{max-width:560px;margin:18px auto 0}.stage.fin .finvid video{width:100%;border-radius:16px;display:block}

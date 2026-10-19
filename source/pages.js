@@ -5,8 +5,8 @@ save=freshSave();
 const shuffle=a=>a.map(x=>[Math.random(),x]).sort((p,q2)=>p[0]-q2[0]).map(x=>x[1]);
 const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const chaps=k=>qa(`template.chap[data-book="${k}"]`);
-const doneN=k=>save.done[k]||0, unlocked=(k,i)=>save.open||i<=doneN(k);
-const bookLocked=k=>k!=='pip'&&!save.open&&doneN('pip')<chaps('pip').length;
+const doneN=k=>save.done[k]||0, unlocked=(k,i)=>(save.open&&(k==='pip'||teacherOK))||i<=doneN(k);
+const bookLocked=k=>k!=='pip'&&!(save.open&&teacherOK)&&doneN('pip')<chaps('pip').length;
 function toast(m){ let t=q('#toast'); if(!t){ t=document.createElement('div'); t.id='toast'; t.setAttribute('role','status'); document.body.appendChild(t); } t.textContent=m; t.classList.add('on'); clearTimeout(toast.t); toast.t=setTimeout(()=>t.classList.remove('on'),3200); }
 const short=t=>t.replace(/^Chapter \d+\.\s*/,'');
 const totalStars=()=>ORDER.reduce((n,k)=>n+(save.stars[k]||[]).length,0);
@@ -148,7 +148,7 @@ function drawPage(){ reset(); const s=STORY[cur], T=chaps(cur), n=P.length, p=P[
     say=`<b>This chapter has ${P.steps.length} steps:</b> ${P.steps.map(x=>STG[x][0]).join(' → ')}.<br>It takes about ${P.mins} minutes. Finish every step to ${goal}!`; next.textContent="Let's go!"; next.classList.add('glow'); }
   else if(p.kind==='finish'){ if(doneN(cur)<=ch){ save.done[cur]=ch+1; keep(); pushNow(); } const g0=save.stars[cur]=save.stars[cur]||[]; if(!g0.includes(ch+'-done')){ g0.push(ch+'-done'); keep(); topStars(); } const z=starsIn(cur,ch);
     p.el.className='stage fin'; p.el.innerHTML=`<div class="burst"></div>${who(cur,110)}<h2 style="font-size:34px">${ch?'Chapter '+ch:'The beginning'} complete!</h2><p class="big">${z} star${z===1?'':'s'} from this chapter · ${Math.min(doneN(cur),T.length)} of ${T.length} chapters done</p>${last?'<p class="note good">That was the last chapter. Your sticker is waiting!</p>':`<p class="unl">${ic('key','pip',30)}<span>Unlocked: <b>${esc(T[ch+1].dataset.title)}</b></span></p>`}<a class="b alt sm" href="#${cur}">Back to the map</a>`;
-    q('#pic').innerHTML=''; { const VV=(VIDS[cur]||{})[ch]; if(VV&&VV.finish) p.el.insertAdjacentHTML('beforeend',vclip(VV.finish)); } box.replaceChildren(p.el); confetti(p.el); S.yay(); say=last?'<b>You did it!</b> You finished the whole book.':'<b>Brilliant!</b> The next chapter is open now. Keep the streak going!'; next.textContent=last?'Claim your sticker':'Open the next chapter'; next.classList.add('glow'); }
+    q('#pic').innerHTML=''; { const VV=(VIDS[cur]||{})[ch]; if(VV&&VV.finish) p.el.insertAdjacentHTML('beforeend',vclip(VV.finish)); } { const FV=(FINVID[cur]||{})[ch]; if(FV){ const _b=p.el.querySelector('a.b,button.b,.b'); (_b||p.el).insertAdjacentHTML(_b?'beforebegin':'beforeend',`<figure class="vclip finvid"><video src="${FV}.mp4" poster="${FV}.jpg" controls playsinline autoplay preload="auto"></video></figure>`); } } box.replaceChildren(p.el); confetti(p.el); S.yay(); say=last?'<b>You did it!</b> You finished the whole book.':'<b>Brilliant!</b> The next chapter is open now. Keep the streak going!'; next.textContent=last?'Claim your sticker':'Open the next chapter'; next.classList.add('glow'); }
   else { q('#pic').innerHTML=p.kind==='play'||p.kind==='chal'||p.kind==='film'||p.kind==='info'||p.kind==='video'?'':banner(p.kind,p.el.textContent); box.replaceChildren(p.el); p.el.classList.remove('flyin'); void p.el.offsetWidth; p.el.classList.add('flyin'); mount(p);
     const si=P.steps.indexOf(p.stage), idx=P.map((x,i)=>x.stage===p.stage?i:-1).filter(i=>i>=0), lastIn=idx[idx.length-1]===pg, nx=P.steps[si+1];
     const intro={video:(p.el.classList&&p.el.classList.contains('endvid'))?'Quick recap video! (Press play if it does not start by itself.) Then the new words.':'Watch Pip\'s welcome film! (Press play if it does not start by itself.) Then read on.',info:'Picture this! Tap the picture to see it bigger.',film:'Watch the picture show first!',story:'Story time!',words:'New words! Tap a card to flip it.',where:`Passport check: where is ${s.name} now?`,qa:'Say your answer out loud, then peek.',dict:'Tap any word to see what it means.',play:'Play time! Win a star.',chal:'A brand-new game with its own goal. Win the chapter star!'}[p.kind]||CHEER[(ch+pg)%CHEER.length];
@@ -170,7 +170,7 @@ function endView(k){ reset(); cur=k; ch=chaps(k).length; P=[]; show('story'); co
 function route(){ const m=location.hash.slice(1).match(/^(pip|quill|dash)(?:-(\d+|end))?$/); if(!m) return home(); const k=m[1], T=chaps(k);
   if(bookLocked(k)){ home(); toast(`That book is locked. Finish "Pip goes to school" first.`); return; }
   if(m[2]==null) return mapView(k);
-  if(m[2]==='end') return (save.open||doneN(k)>=T.length)?endView(k):mapView(k,'Finish every chapter to claim the sticker.');
+  if(m[2]==='end') return ((save.open&&(k==='pip'||teacherOK))||doneN(k)>=T.length)?endView(k):mapView(k,'Finish every chapter to claim the sticker.');
   const i=+m[2]; if(i>=T.length) return mapView(k);
   if(!unlocked(k,i)) return mapView(k,`That chapter is still locked. Finish "${short(T[doneN(k)].dataset.title)}" first.`);
   const pos=save.pos[k]; openChapter(k,i,pos&&pos[0]===i?pos[1]:0); }

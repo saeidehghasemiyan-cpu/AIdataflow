@@ -27,6 +27,7 @@ const DROP={pip:{0:['play','where','qa','chal']}};
 const vclip=n=>`<figure class="vclip"><video src="img/pip0-v${n}.mp4" poster="img/pip0-v${n}.jpg" controls playsinline preload="metadata"></video></figure>`;
 function besideVid(el,n){ if(!el||el.querySelector('.vclip')) return; const h=el.querySelector(':scope>h2'), box=document.createElement('div'); box.className='vtext'; [...el.childNodes].filter(x=>x!==h).forEach(x=>box.appendChild(x)); el.classList.add('withvid'); el.insertAdjacentHTML('beforeend',vclip(n)); el.appendChild(box); }
 const FILMCH={pip:{0:'img/pip0-intro'}};
+const FINVID={pip:{3:'img/pip3-cheer'}};
 const ENDVID={pip:{2:['img/pip2-summary','Let\'s watch a video!','It sums up this chapter quickly, so everything you just read falls into place.']}};
 /* cute animated header for a book's chapter map */
 function mapHero(k,d,n){ const W=1000,H=300, pts=[...Array(n)].map((_,i)=>[40+i*(W-130)/(n-1), 205+Math.sin(i*0.85)*42]);
