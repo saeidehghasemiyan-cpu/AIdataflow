@@ -1405,7 +1405,7 @@ const DROP={pip:{0:['play','where','qa','chal']}};
 const vclip=n=>`<figure class="vclip"><video src="img/pip0-v${n}.mp4" poster="img/pip0-v${n}.jpg" controls playsinline preload="metadata"></video></figure>`;
 function besideVid(el,n){ if(!el||el.querySelector('.vclip')) return; const h=el.querySelector(':scope>h2'), box=document.createElement('div'); box.className='vtext'; [...el.childNodes].filter(x=>x!==h).forEach(x=>box.appendChild(x)); el.classList.add('withvid'); el.insertAdjacentHTML('beforeend',vclip(n)); el.appendChild(box); }
 const FILMCH={pip:{0:'img/pip0-intro'}};
-const FINVID={pip:{3:'img/pip3-cheer',4:'img/pip4-cheer',5:'img/pip5-cheer',6:'img/pip6-cheer',8:'img/pip8-cheer',11:'img/pip11-cheer',13:'img/pip13-cheer'}};
+const FINVID={pip:{3:'img/pip3-cheer',4:'img/pip4-cheer',5:'img/pip5-cheer',6:'img/pip6-cheer',8:'img/pip8-cheer',11:'img/pip11-cheer',13:'img/pip13-cheer',18:'img/pip18-cheer'}};
 const ENDVID={pip:{2:['img/pip2-summary','Let\'s watch a video!','It sums up this chapter quickly, so everything you just read falls into place.'],11:['img/pip11-recap','Let\'s watch a recap video!','It sums up Chapters 5 to 11, the whole data stretch: the plan, collection, the warehouse, the wash, the sticker room, words becoming numbers and the three boxes.']}};
 /* cute animated header for a book's chapter map */
 function mapHero(k,d,n){ const W=1000,H=300, pts=[...Array(n)].map((_,i)=>[40+i*(W-130)/(n-1), 205+Math.sin(i*0.85)*42]);
