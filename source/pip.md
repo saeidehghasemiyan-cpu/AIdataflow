@@ -492,8 +492,6 @@ Pip's route has thirteen stations, and the last ones lead back to the first. Kee
 
 &#91;embedded content: the AI lifecycle · 13 stations and 1 feedback loop\]
 
-Follow the arrows like a snake: left to right along the top, right to left through the middle, then left to right again at the bottom. The coloured line is the feedback loop that makes the whole thing a circle.
-
 ### The stations in one line each
 
 | Station | Name | What happens to data here | Chapter |
@@ -1452,31 +1450,35 @@ That is all of machine learning in miniature. Everything else is the same loop w
 
 ### The four moves, with their real names
 
-**Move 1: Guess. (The forward pass.)** The input numbers flow forward through the model, layer by layer, and a guess comes out. For a language model, the guess is not one word. It is a list of probabilities: a percentage for every token in the vocabulary, all adding up to 100%.
+Think of a child learning to throw a ball into a basket. Throw, see where it lands, work out what went wrong, adjust a little, throw again. A model learns in exactly the same four moves. Here they are, with the grown-up names you will hear.
 
-**Move 2: Check. (The loss.)** The guess is compared with the right answer, and the wrongness is boiled down to one number called the **loss**. A big loss means very wrong. A loss near zero means nearly right. In the story, the model gave "laptop" only a sliver, so its loss on that token was high. The rule that calculates the loss is the **loss function**.
+**Move 1: Guess. (The forward pass.)** The model looks at the words so far and makes a guess about the next word. It does not pick just one word. It spreads its bets, like saying "I'm 40% sure it's *blanket*, 20% sure it's *sun*, 5% sure it's *laptop*..." All the bets add up to 100%.
 
-**Move 3: Find who was wrong. (Backpropagation.)** With billions of knobs, which ones caused the mistake? A method called **backpropagation** works backward from the loss through every layer and calculates, for every single knob: *if you had been a little higher, would the loss have been smaller or bigger, and by how much?* That answer, for each knob, is called its **gradient**. Think of it as a tiny arrow on each knob saying "turn me this way, this strongly".
+**Move 2: Check. (The loss.)** Now the real answer is revealed, and the guess gets a mark. That mark is one single number called the **loss**: it simply says *how wrong* the guess was. A big loss means very wrong. A loss close to zero means nearly perfect. In our story the model gave "laptop" only a tiny bet, so its loss was high. The rule that works out this mark is called the **loss function**.
 
-**Move 4: Nudge. (Gradient descent.)** Every knob is turned a small step in the direction its arrow says. This is **gradient descent**. The program that does the nudging is the **optimiser**.
+**Move 3: Find who was wrong. (Backpropagation.)** The model has billions of little knobs. Which ones caused the mistake? A method called **backpropagation** walks backwards through the model, from the mistake to the start, and asks every knob one question: *"If you had been turned a little, would the guess have been better or worse?"* The answer for each knob is its **gradient**. Picture it as a tiny arrow stuck on each knob, saying "turn me this way, this much".
 
-Then the loop repeats with the next batch. Guess, check, find, nudge. Millions and millions of times.
+**Move 4: Nudge. (Gradient descent.)** Every knob is turned a tiny step in the direction its arrow points. This is called **gradient descent**. The helper program that does all this turning is the **optimiser**.
+
+Then it starts again with the next handful of sentences. Guess, check, find, nudge. Again and again, millions of times. No single round makes the model clever; millions of tiny corrections do.
 
 ### The hiker in the fog
 
-Here is the classic picture for gradient descent. You are on a mountain in thick fog and want to reach the valley. You cannot see far. So you feel the ground with your foot, find which way slopes down, and take one step that way. Then you feel again.
+Here is a picture that makes Move 4 easy to remember.
 
-- Height on the mountain is the loss. The valley is low loss: a good model.
-- Feeling the slope is calculating the gradient.
-- Each step is one nudge of the knobs.
+Imagine you are on a mountain in thick fog, and you want to get down to the valley. You can't see anything. So you feel the ground with your foot, find which way goes downhill, and take one step that way. Then you feel again, and take another step.
 
-The size of each step is the **learning rate**.
+- **How high you are** is the loss. The valley at the bottom means "hardly any mistakes": a good model.
+- **Feeling which way is downhill** is working out the gradient.
+- **Each step** is one nudge of the knobs.
 
-- Steps too big: you leap right over the valley and bounce around the hillsides.
-- Steps too small: you will get there next century.
-- Just right: steady progress.
+How big each step is has its own name: the **learning rate**.
 
-The learning rate is chosen by the engineers, not learned by the model. Settings like this are called **hyperparameters**. More on them in the next chapter.
+- Steps too big: you jump right over the valley and land on the other side of the hill.
+- Steps too small: you will reach the bottom next century.
+- Just right: you walk steadily down.
+
+The model does not choose its own step size. People choose it before training starts. Settings that people choose like this are called **hyperparameters**. You will meet more of them in the next chapter.
 
 ### Back to Pip: the same loop on a language model
 
@@ -1511,20 +1513,22 @@ There is an exception. Text that is repeated many times, or that is very unusual
 
 ### Watching the school report
 
-Training a big model takes weeks, so the engineers need a way to see whether it is going well. They watch a line on a chart: the loss over time. This is the **loss curve**. Remember, loss means "how wrong". So on this chart, **going down is good**.
+Training a big model takes weeks. How do the engineers know it is going well? They watch one simple chart: the loss, day after day. This chart is called the **loss curve**. Remember, loss means "how many mistakes", so on this chart **going down is good**.
 
-Think of it like your scores on spelling tests across a school year, but upside down: instead of counting right answers, it counts mistakes.
+It is like a chart of your spelling mistakes across the school year. You hope the line goes down.
 
-- **At the start the line drops fast.** The model learns the easy things first: which letters go together, common words, "of the", "in a". Like a pupil whose mistakes halve in the first week.
-- **Then it drops more slowly.** Now the model is learning harder things: grammar, facts, style, how a story hangs together. Each improvement takes much longer.
-- **Finally it flattens out.** The model has learned about as much as it can from this data with this many knobs. Training more would only waste electricity.
+Most loss curves have the same shape:
 
-The engineers actually watch **two** lines:
+- **First it drops fast.** The easy things are learned first: common words, and which words often go together, like "of the" and "in a". Like a pupil who makes half as many mistakes after the first week.
+- **Then it drops slowly.** Now the harder things are being learned: grammar, facts, how a story hangs together. Each small improvement takes much longer.
+- **Then it goes flat.** The model has learned about as much as it can from this data. Training longer would only waste electricity.
 
-- The **training loss** is measured on the sentences the model is studying, like marks on homework you have practised.
-- The **validation loss** is measured on the practice box from Chapter 11: sentences the model has never studied, like a surprise quiz with new questions.
+The engineers actually watch **two** lines on the chart:
 
-If both lines go down together, the model is really learning. If the homework line keeps going down but the surprise-quiz line starts to go *up*, something is wrong: the model is memorising its homework instead of understanding it. That warning sign is the subject of the next chapter.
+- The **training loss**: mistakes on the sentences the model is studying. Like your marks on homework you have already practised.
+- The **validation loss**: mistakes on the "practice box" sentences from Chapter 11, which the model has never studied. Like a surprise quiz with brand-new questions.
+
+If both lines go down together, great: the model is really learning. But if the homework line keeps going down while the surprise-quiz line starts going *up*, that is a warning. The model is learning its homework by heart instead of understanding it. You will see this warning sign again in the next chapter.
 
 ### New words
 
@@ -1562,20 +1566,22 @@ Training a large model takes a building full of special computers running for we
 
 ### The story
 
-If Pip could look up from its batch, it would see a hall the size of a supermarket, filled with tall metal cabinets. Each cabinet holds rows of flat machines with fans screaming at full speed. The air is cold. Pipes carry water to pull heat away. The electricity this hall uses in a month could run a small town.
+If Pip could look up from its batch, it would see a giant hall, as big as a supermarket, full of tall metal cupboards. Inside each cupboard are rows of flat computers, their fans roaring. It is cold in here: pipes full of water carry the heat away. This one hall uses as much electricity as a small town.
 
-Every few hours, a bell rings somewhere in the software and the entire state of the model, every one of its billions of knobs, is written to disk. If the power fails or a machine dies, the school can restart from that page and not from the beginning.
+Every few hours, the computers stop for a moment and save everything the model has learned so far, like pressing "save" in a video game. If the power goes out or a machine breaks, training can carry on from the last save instead of starting all over again.
 
-On the wall, so to speak, hangs a single chart with two lines sloping downward. Three engineers on three continents are watching it on their phones.
+And somewhere, three engineers in three different countries are looking at the same chart on their phones: two lines, slowly going down. That means the school is working.
 
 ### The machines
 
-- A **CPU** is the ordinary brain chip in every computer. It is a brilliant all-rounder that does one thing after another very fast.
-- A **GPU** was invented to draw video-game graphics. It is less clever but can do thousands of simple sums at the same moment. Training a neural network is exactly that: mountains of simple sums. So GPUs, and similar chips built specially for AI, are the engines of this factory. People call them **AI accelerators**.
-- A **cluster** is many machines wired together to work as one.
-- **Distributed training** means splitting the work across the cluster. Each machine handles part of each batch, and the results are combined before the knobs are nudged.
+Training happens on special computers. Here is who is who:
 
-The total computing power used is called **compute**. For the largest models, compute is one of the biggest costs of the whole project, next to the people.
+- A **CPU** is the normal "brain chip" inside every computer and phone. It is very clever and can do almost anything, but mostly one thing at a time.
+- A **GPU** was first made to draw the pictures in video games. It is less clever, but it can do thousands of easy sums *at the same time*. And training an AI is exactly that: mountains and mountains of easy sums. So GPUs, and other chips built especially for AI, are the engines of this factory. Together they are called **AI accelerators**.
+- A **cluster** is lots of these machines connected so they work as one big team.
+- **Distributed training** means sharing the work across that team. Each machine takes a piece of the batch, and then they put their results together before the knobs are nudged. Like a class where everyone marks a few pages of the same exam.
+
+All the computer power used for training is called **compute**. For the biggest models, compute is one of the most expensive parts of the whole project, together with paying the people.
 
 ### The settings the humans choose
 
@@ -1593,14 +1599,14 @@ Finding good settings is **hyperparameter tuning**. Teams run smaller trial trai
 
 ### Saving the game
 
-A saved copy of all the weights at a moment in time is a **checkpoint**. It is exactly like a save point in a video game.
+Remember the "save" button in the story? Each saved copy of the model is called a **checkpoint**. It works just like a save point in a video game: if something goes wrong, you go back to the last save instead of starting again.
 
-Checkpoints matter for data flow, because:
+Why does this matter for data? Because every save is a full copy of the model:
 
-- Each one is a complete copy of the model as it was at that moment.
-- A long training run produces many of them.
-- Each is as valuable, and as sensitive, as the final model.
-- Old ones pile up unless someone has a plan for deleting them.
+- **Each checkpoint is a complete copy** of everything the model had learned at that moment.
+- **A long training makes many of them**, so the copies multiply, just as data multiplies when it travels (Chapter 2).
+- **Each one is as precious and as sensitive as the finished model.** If someone steals an old checkpoint, they have stolen almost the whole model.
+- **They pile up.** Unless someone has a plan to delete old ones, they stay on the disks for years.
 
 ### Attention, explained properly
 
@@ -1612,13 +1618,13 @@ A model has many **attention heads** working side by side, like a team of reader
 
 ### Two ways school goes wrong
 
-**Overfitting: the parrot.** The model learns its training data too exactly, including its quirks and accidents, and does badly on anything new. It is the pupil who memorised last year's exam answers and is lost when the questions change.
+**Overfitting: the parrot.** The model learns its training sentences *too* well, word for word, including their mistakes and oddities. Then it does badly on anything new. It is like a pupil who learned last year's exam answers by heart and panics when the questions change.
 
-How to spot it: training loss keeps falling, but validation loss stops falling and starts rising. The two lines on the chart split apart like a pair of scissors opening.
+*How to spot it:* on the chart, the homework line (training loss) keeps going down, but the surprise-quiz line (validation loss) stops going down and starts going up. The two lines open apart like a pair of scissors.
 
-**Underfitting: the daydreamer.** The model has not learned enough. Perhaps it is too small, or training stopped too soon. Both training loss and validation loss stay high.
+**Underfitting: the daydreamer.** The opposite problem: the model has not learned enough. Maybe it is too small, or training was stopped too early. Both lines stay high: lots of mistakes on homework *and* on the quiz.
 
-**The goal: generalisation.** A well-trained model does well on examples it has never seen. It learned the subject, not the worksheet.
+**The goal: generalisation.** A good model also does well on sentences it has never seen. It understood the subject, not just the worksheet.
 
 Tools against overfitting include: more and more varied data; stopping training when validation loss stops improving (**early stopping**); and techniques that deliberately make learning a bit harder so the model cannot take shortcuts (together called **regularisation**).
 
