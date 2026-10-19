@@ -212,3 +212,5 @@ body::before{content:"";position:fixed;inset:-20vmax;z-index:-1;pointer-events:n
 .mh-hop{animation:mhhop 1.3s ease-in-out infinite}@keyframes mhhop{0%,60%,100%{transform:none}30%{transform:translateY(-14px)}}
 .mh-shadow{width:40px;height:8px;border-radius:50%;background:rgba(0,0,0,.18);margin-top:-6px}
 @media (max-width:620px){.mhero{aspect-ratio:10/4}.mh-sun{width:36px;height:36px}}
+
+.pg.endvid h2{margin-bottom:.3em}.pg.endvid p{margin-bottom:1em}.pg.endvid .vclip video{width:100%;border-radius:16px;display:block}
