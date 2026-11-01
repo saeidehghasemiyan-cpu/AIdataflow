@@ -23,7 +23,7 @@ function openGloss(k){ k=k||(cur&&!bookLocked(cur)?cur:glossBooks().slice(-1)[0]
   q('#gl-x',g).onclick=()=>{ g.hidden=true; };
   qa('.gtab',g).forEach(b=>b.onclick=()=>openGloss(b.dataset.k));
   const inp=q('#gl-q',g); inp.oninput=()=>{ const s=inp.value.trim().toLowerCase(); let n=0; qa('.gw',g).forEach(x=>{ const on=!s||x.dataset.t.includes(s)||x.textContent.toLowerCase().includes(s); x.hidden=!on; if(on) n++; }); q('#gl-none',g).hidden=n>0||!got.length; }; }
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const g=q('#gloss'); if(g&&!g.hidden) g.hidden=true; const b=q('#bonus'); if(b&&!b.hidden) b.hidden=true; } });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const g=q('#gloss'); if(g&&!g.hidden) g.hidden=true; } });
 
 /* ---------- bonus quizzes: harder, optional, extra stars ---------- */
 const BONUS={quill:{
@@ -103,34 +103,19 @@ const BONUS={quill:{
  ["Internal meeting notes (yellow). Where may they go?","Business or private AI, but not public AI","Anywhere, including public AI","Nowhere at all","Only public AI","Yellow is internal but not secret: fine for business and private AI, not for public AI."],
  ["You realise you pasted client data into a personal AI app last week. What is the first step?","Tell the responsible person in your organisation promptly.","Say nothing and delete the app.","Email the clients yourself.","Report it to the regulator yourself.","Do not hide it. Early is always better, and the organisation decides who must be informed."],
  ["Most AI data problems begin at which stops?","Stop 1 and stop 8, where a person decides","Stop 3, the road","Stop 6, the model","Stop 4, the front door","Almost every incident traces back to an ordinary human choice: what to send, and what to do with the answer."]]}};
-const bonusOpen=(k,i)=>!!(BONUS[k]&&BONUS[k][i])&&((save.open&&teacherOK)||i<doneN(k));
 const bonusStars=(k,i)=>(save.stars[k]||[]).filter(x=>String(x).startsWith(i+'-bx')).length;
-function bonusBox(k,i){ if(!(BONUS[k]&&BONUS[k][i])) return ''; const n=BONUS[k][i].length, z=bonusStars(k,i);
-  return `<div class="bonusbox">${ic('star','pip',34)}<div><b>Bonus quiz${z?` · ${z} of ${n} stars won`:''}</b><span>Optional and harder. Up to ${n} extra stars. You do not need it to unlock the next chapter.</span></div><button class="b sm" data-bonus="${i}">${z===n?'Play again':z?'Try again':'Try the bonus quiz'}</button></div>`; }
-function bonusPanel(k){ const el=q('#m-bonus'); if(!el) return; if(!BONUS[k]){ el.innerHTML=''; el.hidden=true; return; } el.hidden=false; const T=chaps(k), ks=Object.keys(BONUS[k]).map(Number);
-  const tot=ks.reduce((a,i)=>a+bonusStars(k,i),0), max=ks.reduce((a,i)=>a+BONUS[k][i].length,0);
-  el.innerHTML=`<div class="bhead">${ic('star','pip',40)}<div><h2>Bonus quizzes</h2><p>Harder questions for people who want more. They are <b>optional</b>: chapters unlock without them. Each right answer wins an extra star. A quiz opens once you finish its chapter.</p></div><span class="pill">${ic('star','pip',14)} ${tot} of ${max} bonus stars</span></div>
-    <div class="bgrid">${ks.map(i=>{ const op=bonusOpen(k,i), z=bonusStars(k,i), n=BONUS[k][i].length;
-      return `<button class="bq ${op?'':'lock'} ${z===n?'full':''}" data-bonus="${i}" ${op?'':'aria-disabled="true"'}><span class="num">${i}</span><b>${esc(short(T[i].dataset.title))}</b><small>${op?(z?`${z} of ${n} stars`:`${n} questions`):'Finish the chapter first'}</small>${op?`<span class="bst">${Array.from({length:n},(_,j)=>`<i class="${j<z?'on':''}"></i>`).join('')}</span>`:ic('lock','card',20)}</button>`; }).join('')}</div>`; }
-document.addEventListener('click',e=>{ const b=e.target.closest('[data-bonus]'); if(!b||!cur) return; const i=+b.dataset.bonus;
-  if(!bonusOpen(cur,i)){ S.no(); toast(`Finish "${short(chaps(cur)[i].dataset.title)}" first, then its bonus quiz opens.`); return; } openBonus(cur,i); });
-function openBonus(k,i){ let g=q('#bonus'); if(!g){ g=document.createElement('div'); g.id='bonus'; g.className='gate'; document.body.appendChild(g); }
-  const Q=shuffle(BONUS[k][i].map((x,n)=>({x,n}))), T=chaps(k); let at=0, right=0;
-  const close=()=>{ g.hidden=true; if(!q('#map').hidden) bonusPanel(k); const fb=q('#chapter .bonusbox'); if(fb) fb.outerHTML=bonusBox(k,i); topStars(); updGloss(); };
+function bonusGame(st,k,i){ const Q=shuffle(BONUS[k][i].map((x,n)=>({x,n}))); let at=0, right=0;
   const draw=()=>{ const {x,n}=Q[at], opts=shuffle([[x[1],1],[x[2],0],[x[3],0],[x[4],0]]), won=(save.stars[k]||[]).includes(i+'-bx'+n);
-    g.innerHTML=`<div class="gcard wide bonuscard" style="--c:var(--${k})" role="dialog" aria-label="Bonus quiz">
-      <div class="ghd">${ic('star','pip',48)}<div><span class="gtag">Bonus quiz · optional</span><h2>${esc(short(T[i].dataset.title))}</h2></div><button class="b alt sm" id="bq-x">Close</button></div>
-      <div class="row" style="justify-content:flex-start"><span class="pill">Question ${at+1} of ${Q.length}</span><span class="pill">${ic('star','pip',14)} ${right} right</span>${won?'<span class="pill">star already won</span>':''}</div>
-      <p class="bqq">${esc(x[0])}</p><div class="qopts">${opts.map(o=>`<button class="tile qo" data-ok="${o[1]}">${esc(o[0])}</button>`).join('')}</div><p class="note" id="bq-n"></p></div>`;
-    q('#bq-x',g).onclick=close; };
-  g.onclick=e=>{ if(e.target===g) return close(); if(e.target.closest('#bq-next')){ at++; if(at<Q.length) draw(); else end(); return; }
-    if(e.target.closest('#bq-again')) return openBonus(k,i); if(e.target.closest('#bq-done')) return close();
-    const b=e.target.closest('.qo'); if(!b||b.disabled) return; const ok=b.dataset.ok==='1', {x,n}=Q[at], nt=q('#bq-n',g);
-    qa('.qo',g).forEach(o=>{ o.disabled=true; if(o.dataset.ok==='1') o.classList.add('on'); }); if(!ok) b.classList.add('stuck');
-    if(ok){ right++; const had=(save.stars[k]||[]).includes(i+'-bx'+n); if(had) S.yay(); else award(i+'-bx'+n,q('.bonuscard',g)); } else S.no();
-    nt.className='note '+(ok?'good':'bad'); nt.textContent=(ok?'Right! ':'Not quite. The right answer is lit up. ')+x[5];
-    nt.insertAdjacentHTML('afterend',`<button class="b sm" id="bq-next">${at<Q.length-1?'Next question':'See my score'}</button>`); q('#bq-next',g).focus(); };
+    st.innerHTML=`<div class="row"><span class="pill">Question ${at+1} of ${Q.length}</span><span class="pill">${ic('star','pip',14)} ${right} right</span>${won?'<span class="pill">star already won</span>':''}</div>
+      <p class="bqq">${esc(x[0])}</p><div class="qopts">${opts.map(o=>`<button class="tile qo" data-ok="${o[1]}">${esc(o[0])}</button>`).join('')}</div><p class="note"></p>`; };
   const end=()=>{ const z=bonusStars(k,i), n=Q.length;
-    g.querySelector('.bonuscard').innerHTML=`<div class="stage fin" style="box-shadow:none;border:0">${who(k,96)}<h2 style="font-size:30px">${right===n?'Perfect score!':right>=n/2?'Well done!':'Good try!'}</h2><p class="big">${right} of ${n} right this time · ${z} of ${n} bonus stars won</p><p class="note ${right===n?'good':''}">${z<n?'Play again to win the stars you missed. The questions come in a new order.':'You have every bonus star for this chapter!'}</p><div class="row"><button class="b alt" id="bq-again">Play again</button><button class="b" id="bq-done">Done</button></div></div>`;
-    if(right===n) confetti(q('.bonuscard .stage',g)); S.yay(); };
-  draw(); g.hidden=false; S.pop(); }
+    st.innerHTML=`${ic('star','pip',64)}<p class="big">${right===n?'Perfect score!':right>=n/2?'Well done!':'Good try!'} ${right} of ${n} right.</p><p class="note ${right===n?'good':''}">${z} of ${n} bonus stars won in this chapter. ${z<n?'Play again to win the ones you missed.':'You have them all!'}</p><div class="row"><button class="b alt sm" id="bq-again">Play again</button></div>`;
+    if(right===n) confetti(st); S.yay(); q('#next').classList.add('glow'); };
+  st.onclick=e=>{ if(e.target.closest('#bq-next')){ at++; if(at<Q.length) draw(); else end(); return; }
+    if(e.target.closest('#bq-again')){ at=0; right=0; Q.sort(()=>Math.random()-.5); draw(); return; }
+    const b=e.target.closest('.qo'); if(!b||b.disabled) return; const ok=b.dataset.ok==='1', {x,n}=Q[at], nt=q('.note',st);
+    qa('.qo',st).forEach(o=>{ o.disabled=true; if(o.dataset.ok==='1') o.classList.add('on'); }); if(!ok) b.classList.add('stuck');
+    if(ok){ right++; if((save.stars[k]||[]).includes(i+'-bx'+n)) S.yay(); else award(i+'-bx'+n,st); } else S.no();
+    nt.className='note '+(ok?'good':'bad'); nt.textContent=(ok?'Right! ':'Not quite. The right answer is lit up. ')+x[5];
+    nt.insertAdjacentHTML('afterend',`<button class="b sm" id="bq-next">${at<Q.length-1?'Next question':'See my score'}</button>`); };
+  draw(); }

@@ -146,7 +146,6 @@ s=s[:i]+'''<main id="map" hidden>
     <div id="m-scene"></div>
     <div id="m-next" class="row" style="justify-content:flex-start"></div>
     <ol class="board" id="board"></ol>
-    <section id="m-bonus" class="mbonus" hidden></section>
     <label class="ck" for="t-open"><input type="checkbox" id="t-open"><span>Teacher mode: unlock every chapter</span></label>
   </main>
   <main id="story" hidden>
