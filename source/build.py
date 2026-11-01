@@ -146,6 +146,7 @@ s=s[:i]+'''<main id="map" hidden>
     <div id="m-scene"></div>
     <div id="m-next" class="row" style="justify-content:flex-start"></div>
     <ol class="board" id="board"></ol>
+    <section id="m-bonus" class="mbonus" hidden></section>
     <label class="ck" for="t-open"><input type="checkbox" id="t-open"><span>Teacher mode: unlock every chapter</span></label>
   </main>
   <main id="story" hidden>
@@ -172,7 +173,7 @@ rep('</defs></svg>','''<symbol id="i-cloud" viewBox="0 0 48 48"><path d="M12 36a
 </defs></svg>''')
 i=s.index('function speak(t){'); j=s.index('\n',i); s=s[:i]+s[j:]
 i=s.index('/* ---------- pages ---------- */'); j=s.index('</script>',i)
-s=s[:i]+open('challenges.js').read()+'\n'+open('films.js').read()+'\n'+open('art.js').read()+'\n'+open('supa.js').read()+'\n'+open('pages.js').read()+'\n'+s[j:]
+s=s[:i]+open('challenges.js').read()+'\n'+open('films.js').read()+'\n'+open('art.js').read()+'\n'+open('supa.js').read()+'\n'+open('gloss.js').read()+'\n'+open('pages.js').read()+'\n'+s[j:]
 rep('<script>\nconst q=','\n'.join(out)+'\n<script>\nconst q=')
 open('data-journeys.html','w').write(s); print('bytes',len(s))
 import shutil,os
