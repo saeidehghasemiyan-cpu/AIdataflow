@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pip Reads the Rulebook</title>
+<meta name="description" content="A 60-minute team game: travel Pip's road and crack real expert texts about AI and data.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@500;700;800;900&family=Patrick+Hand&display=swap">
+<style>
+/* Layout: the Pip site's sticker world. Home = Pip's road map with 10 stops; each stop opens its own mission page with 4 steps; stamps collect in a passport; report at the end */
+:root{
+  --bg:#e9f5f1; --dot:#c6e2d9; --card:#ffffff; --ink:#1b2140; --muted:#525a80;
+  --pip:#ffc933; --pink:#ff8090; --mint:#35d3a8; --sky:#9ad8ff; --lilac:#c8b6ff;
+  --good:#17885a; --bad:#d6373c; --on:#1b2140; --shade:#1b2140; --note:#fff4bf;
+  --f-d:"Bagel Fat One","Baloo 2",system-ui,sans-serif;
+  --f-b:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-h:"Patrick Hand","Comic Sans MS",cursive;
+  --f-m:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141833; --dot:#232a55; --card:#222a55; --ink:#f6f3e6; --muted:#b3b9dc; --sky:#3f74bd; --lilac:#6a58c2;
+  --good:#4ad295; --bad:#ff7a7f; --on:#141833; --shade:#05060f; --note:#4a4220; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141833; --dot:#232a55; --card:#222a55; --ink:#f6f3e6; --muted:#b3b9dc; --sky:#3f74bd; --lilac:#6a58c2;
+  --good:#4ad295; --bad:#ff7a7f; --on:#141833; --shade:#05060f; --note:#4a4220; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg) radial-gradient(var(--dot) 1.5px,transparent 1.7px) 0 0/22px 22px;color:var(--ink);
+  font:500 17px/1.55 var(--f-b);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 60px;overflow-x:hidden}
+h1,h2,h3,h4{font-family:var(--f-d);font-weight:400;line-height:1.08;margin:0;text-wrap:balance}
+p{margin:0}
+a{color:inherit}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--ink);outline-offset:3px;border-radius:8px}
+.wrap{max-width:1000px;margin-inline:auto;display:flex;flex-direction:column;gap:24px;padding-top:24px}
+.hand{font-family:var(--f-h);font-size:21px}
+
+/* bar */
+.bar{position:sticky;top:0;z-index:20;margin-inline:calc(-1*max(16px,env(safe-area-inset-left,0px)));padding:10px max(16px,env(safe-area-inset-left,0px));
+  background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(8px);border-bottom:3px solid var(--ink)}
+.bar .in{max-width:1000px;margin-inline:auto;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.brand{font-family:var(--f-d);font-size:20px;display:flex;align-items:center;gap:8px;margin-right:auto;min-width:0;text-decoration:none}
+.brand::before{content:"";width:20px;height:20px;border-radius:7px;border:3px solid var(--ink);background:conic-gradient(var(--pip) 0 50%,var(--mint) 0);animation:spin 8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tm{font:900 13px var(--f-b);border:2.5px solid var(--ink);border-radius:999px;padding:3px 10px;background:var(--pip);color:var(--on);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.pass{font:900 13px var(--f-b);border:2.5px solid var(--ink);border-radius:999px;padding:3px 10px;background:var(--card);text-decoration:none;white-space:nowrap}
+.clock{display:flex;align-items:center;gap:6px}
+.clock b{font:400 20px var(--f-d);min-width:96px;text-align:center;border:2.5px solid var(--ink);border-radius:12px;padding:1px 8px;background:var(--card);font-variant-numeric:tabular-nums}
+.saved{font:800 13px var(--f-b);color:var(--good);min-width:58px}
+
+/* buttons */
+.b{font:800 16px var(--f-b);padding:9px 18px;border:3px solid var(--ink);border-radius:999px;background:var(--c,var(--pip));color:var(--on);box-shadow:3px 3px 0 var(--shade);text-decoration:none;display:inline-block;
+  transition:transform .15s cubic-bezier(.3,1.6,.5,1),box-shadow .08s}
+.b:hover{transform:translateY(-2px) rotate(-1.5deg) scale(1.03)}
+.b:active{transform:translateY(3px);box-shadow:0 0 0 var(--shade)}
+.b.alt{background:var(--card);color:var(--ink)}
+.b.sm{font-size:13px;padding:5px 11px}
+.b[disabled]{opacity:.45;pointer-events:none}
+
+/* gate */
+.gate{position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:16px;background:color-mix(in srgb,var(--bg) 70%,transparent);backdrop-filter:blur(6px)}
+.gate .box{width:min(520px,100%);background:var(--card);border:4px solid var(--ink);border-radius:30px;box-shadow:9px 9px 0 var(--shade);padding:26px;display:flex;flex-direction:column;gap:14px;align-items:center;text-align:center}
+.gate h2{font-size:34px}
+.gate input{width:100%;font:800 22px var(--f-b);text-align:center;color:var(--ink);background:var(--bg);border:3px solid var(--ink);border-radius:16px;padding:10px}
+.gate .err{color:var(--bad);font-weight:800;min-height:1.4em}
+.gate .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+
+/* home */
+.hero{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:20px;align-items:center}
+.hero h1{font-size:clamp(40px,7vw,74px);text-shadow:4px 4px 0 var(--card),7px 7px 0 var(--ink)}
+.hero h1 em{font-style:normal;display:inline-block;padding:0 .12em;background:var(--pip);color:#1b2140;border:4px solid var(--ink);border-radius:18px;transform:rotate(-3deg);text-shadow:none;animation:wig 2.6s ease-in-out infinite}
+@keyframes wig{50%{transform:rotate(3deg) scale(1.04)}}
+.hero p.lead{font-size:19px;font-weight:700;margin-top:14px;max-width:48ch}
+.pipbox{display:flex;flex-direction:column;align-items:center}
+.pipbox svg{animation:hop 1.6s ease-in-out infinite}
+@keyframes hop{0%,60%,100%{transform:none}30%{transform:translateY(-14px)}}
+.bubble{font:400 21px var(--f-h);background:var(--note);border:3px solid var(--ink);border-radius:18px;padding:6px 14px;margin-bottom:10px;transform:rotate(-3deg);position:relative;text-align:center}
+.bubble::after{content:"";position:absolute;left:46%;bottom:-12px;width:18px;height:18px;background:var(--note);border-right:3px solid var(--ink);border-bottom:3px solid var(--ink);transform:rotate(45deg)}
+.plan{display:flex;flex-wrap:wrap;gap:10px}
+.plan span{font-weight:800;border:2.5px solid var(--ink);border-radius:14px;padding:6px 12px;background:var(--card)}
+.plan span i{font-style:normal;font-family:var(--f-d);margin-right:6px}
+
+.stretch{display:flex;flex-direction:column;gap:12px}
+.stretch h3{font-size:24px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.stretch h3 small{font:800 14px var(--f-b);color:var(--muted)}
+.road{position:relative;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;padding:6px 0 26px}
+.road::after{content:"";position:absolute;left:0;right:0;bottom:0;height:14px;border:3px solid var(--ink);border-radius:999px;background:repeating-linear-gradient(90deg,var(--card) 0 18px,var(--ink) 18px 22px);animation:road 1.6s linear infinite}
+@keyframes road{to{background-position:-22px 0}}
+.stop{--c:var(--pip);position:relative;text-align:left;text-decoration:none;display:flex;flex-direction:column;gap:6px;border:3px solid var(--ink);border-radius:22px;padding:14px 16px 16px;background:color-mix(in srgb,var(--c) 28%,var(--card));box-shadow:5px 5px 0 var(--shade);transition:transform .15s}
+.stop:nth-child(odd){transform:rotate(-1deg)}.stop:nth-child(even){transform:rotate(1deg)}
+.stop:hover{transform:translateY(-5px) rotate(0) scale(1.02)}
+.stop .st{font:900 12px var(--f-b);letter-spacing:.06em;text-transform:uppercase}
+.stop .ic{font-size:34px;line-height:1}
+.stop h4{font-size:21px}
+.stop p{font-size:14px;font-weight:700;color:var(--muted)}
+.stamp{position:absolute;top:-14px;right:-10px;width:66px;height:66px;border-radius:50%;border:3px dashed var(--good);color:var(--good);background:var(--card);display:grid;place-items:center;text-align:center;font:400 12px/1 var(--f-d);transform:rotate(14deg);box-shadow:2px 2px 0 var(--shade)}
+.stamp b{display:block;font-size:22px}
+.started{position:absolute;top:-10px;right:-6px;font:900 11px var(--f-b);border:2px solid var(--ink);border-radius:999px;padding:2px 8px;background:var(--sky);color:#1b2140}
+.extras{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.extra{--c:var(--sky);display:flex;gap:14px;align-items:center;border:3px solid var(--ink);border-radius:22px;padding:14px 16px;background:color-mix(in srgb,var(--c) 30%,var(--card));box-shadow:5px 5px 0 var(--shade);text-decoration:none}
+.extra .ic{font-size:38px}
+.extra h4{font-size:22px}
+.extra p{font-size:14px;font-weight:700;color:var(--muted)}
+
+/* panels */
+.panel{background:var(--card);border:3px solid var(--ink);border-radius:26px;box-shadow:7px 7px 0 var(--shade);padding:22px 24px}
+
+/* warm-up */
+.match{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.col{display:flex;flex-direction:column;gap:10px}
+.col h4{font:400 20px var(--f-d)}
+.pick{font-weight:800;text-align:left;border:3px solid var(--ink);border-radius:16px;padding:10px 14px;background:var(--card);box-shadow:3px 3px 0 var(--shade);transition:transform .12s}
+.pick.term{font-family:var(--f-m);font-weight:700;font-size:15px}
+.pick:hover{transform:translateY(-2px)}
+.pick.sel{background:var(--sky)}
+.pick.done{background:color-mix(in srgb,var(--mint) 45%,var(--card));box-shadow:none;cursor:default;transform:none}
+.pick.nope{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.mstat{font:400 22px var(--f-h);margin-top:12px}
+
+/* mission page */
+.mhead{--c:var(--pip);display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center}
+.mhead .num{font:400 18px/1.1 var(--f-d);width:64px;height:64px;display:grid;place-items:center;text-align:center;border:3px solid var(--ink);border-radius:20px;background:var(--c);color:#1b2140;transform:rotate(-6deg);box-shadow:4px 4px 0 var(--shade)}
+.mhead h2{font-size:clamp(28px,4.4vw,44px);background:linear-gradient(transparent 60%,color-mix(in srgb,var(--c) 70%,transparent) 60%);padding-right:6px}
+.mhead .kind{font-weight:900;font-size:13px;border:2.5px solid var(--ink);border-radius:999px;padding:3px 10px;background:var(--card)}
+.steps{display:flex;gap:8px;flex-wrap:wrap}
+.step{display:flex;align-items:center;gap:8px;font:800 15px var(--f-b);border:3px solid var(--ink);border-radius:999px;padding:6px 14px 6px 6px;background:var(--card)}
+.step i{font-style:normal;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;border:2.5px solid var(--ink);font-family:var(--f-d);font-size:14px;background:var(--bg)}
+.step[aria-current="step"]{background:var(--c);color:#1b2140}
+.step.ok i{background:var(--good);color:#fff}
+.pane{min-height:340px}
+
+.flip{perspective:1200px;max-width:640px;margin-inline:auto;width:100%}
+.flip .inner{position:relative;display:grid;transition:transform .7s cubic-bezier(.3,1.4,.5,1);transform-style:preserve-3d}
+.flip.on .inner{transform:rotateY(180deg)}
+.face{grid-area:1/1;min-height:300px;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:4px solid var(--ink);border-radius:28px;box-shadow:8px 8px 0 var(--shade);padding:24px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:14px}
+.face.front{background:color-mix(in srgb,var(--c) 40%,var(--card))}
+.face.front h3{font-size:clamp(24px,3.6vw,34px)}
+.face.back{background:var(--note);transform:rotateY(180deg);align-items:flex-start;text-align:left}
+.face.back p{font:400 21px/1.4 var(--f-h)}
+.face.back b{font-family:var(--f-b);font-weight:900;font-size:.85em;background:color-mix(in srgb,var(--c) 40%,transparent);padding:0 3px;border-radius:4px}
+.pw{width:100%;margin-top:6px;border-top:2.5px dashed var(--ink);padding-top:10px}
+.pwh{font:400 18px var(--f-d)!important;margin-bottom:6px}
+.pw dl{margin:0;display:grid;grid-template-columns:max-content 1fr;gap:6px 12px;align-items:baseline}
+.pw dt{font:900 14px var(--f-b);border:2px solid var(--ink);border-radius:999px;padding:1px 10px;background:var(--card)}
+.pw dd{margin:0;font:400 19px/1.3 var(--f-h)}
+@media (max-width:520px){.pw dl{grid-template-columns:1fr}.pw dd{margin-bottom:6px}}
+.pw span{font:800 13px var(--f-b);border:2px solid var(--ink);border-radius:999px;padding:2px 10px;background:var(--card)}
+.flip{max-width:760px}
+.face.back h4{font-size:20px}
+
+.reader{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:20px;align-items:start}
+.reader>*{min-width:0}
+.src{font-weight:800;font-size:14px;color:var(--muted);margin-bottom:8px}
+.ctx{font-weight:700;color:var(--muted);margin-bottom:10px}
+.quote{border:3px solid var(--ink);border-radius:18px;background:color-mix(in srgb,var(--sky) 16%,var(--card));padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.quote p{font-family:var(--f-m);font-size:15px;line-height:1.65}
+.quote p::before{content:"› ";font-weight:900;color:var(--muted)}
+.ql{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.simpb{font:800 12px var(--f-b);border:2px solid var(--ink);border-radius:999px;padding:1px 9px;background:var(--note);color:var(--ink)}
+.quote p.simple{font:400 20px/1.35 var(--f-h);background:var(--note);border:2px dashed var(--ink);border-radius:12px;padding:6px 10px}
+.quote p.simple::before{content:"🐣 "}
+.about{border:3px solid var(--ink);border-radius:18px;background:var(--note);padding:12px 16px;display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.about p{font:400 19px/1.35 var(--f-h)}
+.about b{font:800 14px var(--f-b);display:block}
+.quote p.qsrc{font:400 18px var(--f-d);margin-top:4px}
+.quote p.qsrc::before{content:"📄 "}
+.hw{font:inherit;color:inherit;background:color-mix(in srgb,var(--c) 45%,transparent);border:0;border-bottom:3px dotted var(--ink);border-radius:4px;padding:0 2px;cursor:pointer}
+.hw.got{background:color-mix(in srgb,var(--good) 25%,transparent);border-bottom-style:solid}
+.reader1{display:flex;flex-direction:column;gap:12px}
+.crackbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;border:3px solid var(--ink);border-radius:18px;padding:8px 14px;background:var(--card)}
+.crackbar .hand{flex:1 1 260px}
+.hw2{font:inherit;color:inherit;background:none;border:0;border-bottom:2.5px dotted var(--ink);padding:0;cursor:help}
+.hw2:hover{background:var(--note)}
+.def b{font:800 14px var(--f-b);display:block}
+.def{display:inline-block;max-width:100%;vertical-align:top;font:400 19px/1.3 var(--f-h)!important;color:var(--ink);background:var(--note);border:2px solid var(--ink);border-radius:10px;padding:1px 8px;margin:0 4px;box-shadow:2px 2px 0 var(--shade);animation:pop .25s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+.decoder{position:sticky;top:90px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.decoder .bubble{width:100%;transform:rotate(-1.5deg);min-height:120px;display:flex;flex-direction:column;justify-content:center;font-size:20px}
+.decoder .bubble b{font:700 15px var(--f-m);display:block;margin-bottom:4px}
+.meter{font:800 14px var(--f-b);color:var(--muted)}
+
+.quiz{max-width:640px;margin-inline:auto;width:100%;display:flex;flex-direction:column;gap:10px}
+.quiz h3{font-size:clamp(24px,3.4vw,32px);text-align:center}
+.quiz button.o{font:800 18px var(--f-b);text-align:left;border:3px solid var(--ink);border-radius:18px;padding:12px 16px;background:var(--card);box-shadow:3px 3px 0 var(--shade)}
+.quiz button.o:hover{transform:translateY(-2px)}
+.quiz button.o.right{background:color-mix(in srgb,var(--good) 30%,var(--card))}
+.quiz button.o.wrong{background:color-mix(in srgb,var(--bad) 25%,var(--card))}
+.quiz .fb{font:400 22px var(--f-h);text-align:center;min-height:1.5em}
+
+.talk{display:flex;flex-direction:column;gap:16px}
+.agree{border:3px solid var(--ink);border-radius:22px;padding:16px 18px;background:color-mix(in srgb,var(--c) 22%,var(--card));display:flex;flex-direction:column;gap:12px}
+.agree .stmt{font:400 clamp(20px,2.6vw,26px)/1.2 var(--f-d)}
+.scale{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.scale button{border:3px solid var(--ink);border-radius:16px;padding:8px 4px;background:var(--card);display:flex;flex-direction:column;align-items:center;gap:2px;font:800 12px var(--f-b);line-height:1.2;text-align:center}
+.scale button span{font-size:26px;line-height:1}
+.scale button[aria-pressed="true"]{background:var(--pip);color:#1b2140;transform:translateY(-3px) rotate(-2deg);box-shadow:3px 3px 0 var(--shade)}
+.case{border:4px solid var(--ink);border-radius:24px;padding:18px 20px;background:color-mix(in srgb,var(--c) 30%,var(--card));box-shadow:6px 6px 0 var(--shade);display:flex;flex-direction:column;gap:8px}
+.case h3{font-size:clamp(24px,3.4vw,32px)}
+.facts{background:var(--card);border:2.5px solid var(--ink);border-radius:14px;padding:10px 14px}
+.facts .fh{font:400 18px var(--f-d);margin-bottom:4px}
+.facts ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px;font-weight:700}
+.q.dp{background:color-mix(in srgb,var(--lilac) 22%,var(--card))}
+.case .story{font-weight:700;font-size:18px}
+.case .goal{font-weight:700;font-size:18px;background:var(--card);border:2.5px dashed var(--ink);border-radius:14px;padding:8px 12px}
+.dec{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.dec button{border:3px solid var(--ink);border-radius:16px;padding:10px 12px;background:var(--card);display:flex;gap:8px;align-items:flex-start;text-align:left;font:800 15px/1.3 var(--f-b)}
+.dec button span{font-size:20px;line-height:1}
+.dec button[aria-pressed="true"]{background:var(--pip);color:#1b2140;transform:translateY(-3px) rotate(-1deg);box-shadow:3px 3px 0 var(--shade)}
+.q{border:3px solid var(--ink);border-radius:20px;padding:14px 16px;background:var(--card);display:flex;flex-direction:column;gap:8px}
+.q .ask{font-weight:800;font-size:18px}
+.q .ask span{font-family:var(--f-d);font-weight:400;margin-right:8px}
+.q details summary{font-weight:900;font-size:14px;cursor:pointer;display:inline-block;border:2px solid var(--ink);border-radius:999px;padding:1px 10px;background:var(--bg)}
+.q details p{margin-top:6px;font:400 19px/1.35 var(--f-h)}
+.q.own{border-style:dashed;background:transparent}
+textarea{width:100%;min-height:80px;font:600 16px/1.45 var(--f-b);color:var(--ink);background:var(--card);border:2.5px solid var(--ink);border-radius:14px;padding:10px 12px;resize:vertical}
+textarea::placeholder{color:var(--muted);font-weight:600}
+.nav2{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+
+.celebrate{position:fixed;inset:0;z-index:45;display:grid;place-items:center;background:color-mix(in srgb,var(--bg) 60%,transparent);backdrop-filter:blur(4px);padding:16px}
+.celebrate .box{background:var(--card);border:4px solid var(--ink);border-radius:30px;box-shadow:9px 9px 0 var(--shade);padding:26px;text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center;width:min(460px,100%)}
+.bigstamp{width:150px;height:150px;border-radius:50%;border:5px dashed var(--good);color:var(--good);display:grid;place-items:center;font:400 20px/1.05 var(--f-d);animation:thump .6s cubic-bezier(.3,1.8,.5,1)}
+.bigstamp b{display:block;font-size:44px}
+@keyframes thump{from{transform:scale(2.4) rotate(-30deg);opacity:0}to{transform:scale(1) rotate(12deg);opacity:1}}
+
+/* report */
+.letter{background:var(--note);border:3px solid var(--ink);border-radius:6px 22px 22px 22px;padding:18px 20px;box-shadow:5px 5px 0 var(--shade);display:flex;flex-direction:column;gap:8px}
+.letter p{font:400 22px/1.4 var(--f-h)}
+.letter textarea{font:400 20px var(--f-h)}
+.rep{display:flex;flex-direction:column;gap:12px}
+.rep h3{font-size:30px}
+.rep h4{font:400 22px var(--f-d);margin-top:8px}
+.rep .meta{font-weight:800;color:var(--muted)}
+.rep dl{margin:0;display:flex;flex-direction:column;gap:6px}
+.rep dt{font-weight:800}
+.rep dd{margin:0 0 4px;padding:8px 12px;border-left:5px solid var(--pip);background:var(--bg);border-radius:0 12px 12px 0;white-space:pre-wrap}
+.rep dd.empty{color:var(--muted);font-style:italic}
+.stamps{display:flex;flex-wrap:wrap;gap:10px}
+.stamps span{width:56px;height:56px;border-radius:50%;border:3px dashed var(--good);display:grid;place-items:center;font-size:24px;transform:rotate(-8deg)}
+.stamps span.no{border-color:var(--muted);opacity:.35;filter:grayscale(1)}
+.tools{display:flex;flex-wrap:wrap;gap:10px}
+.msg{font:400 20px var(--f-h)}
+.foot{font-size:14px;font-weight:700;color:var(--muted);text-align:center}
+
+.confetti{position:fixed;pointer-events:none;z-index:50;font-size:22px;animation:fall 1.1s ease-in forwards}
+@keyframes fall{to{transform:translateY(120px) rotate(200deg);opacity:0}}
+
+@media (max-width:820px){.hero,.reader{grid-template-columns:1fr}.pipbox{order:-1}.reader1{display:flex;flex-direction:column;gap:12px}
+.crackbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;border:3px solid var(--ink);border-radius:18px;padding:8px 14px;background:var(--card)}
+.crackbar .hand{flex:1 1 260px}
+.hw2{font:inherit;color:inherit;background:none;border:0;border-bottom:2.5px dotted var(--ink);padding:0;cursor:help}
+.hw2:hover{background:var(--note)}
+.def b{font:800 14px var(--f-b);display:block}
+.def{display:inline-block;max-width:100%;vertical-align:top;font:400 19px/1.3 var(--f-h)!important;color:var(--ink);background:var(--note);border:2px solid var(--ink);border-radius:10px;padding:1px 8px;margin:0 4px;box-shadow:2px 2px 0 var(--shade);animation:pop .25s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+.decoder{position:static}}
+@media (max-width:520px){.match{grid-template-columns:1fr}.clock{width:100%}.scale button{font-size:10px}.scale button span{font-size:22px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media print{
+  body{background:#fff;color:#000}
+  .bar,.gate,.celebrate,#view>*:not(.printme),.tools,.letter{display:none!important}
+  .panel{box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gt">
+  <div class="box">
+    <div id="gpip"></div>
+    <h2 id="gt">Hi! What’s your team called?</h2>
+    <p>Pick a fun name. Everything you write will be saved under this name, and you’ll get a report at the end.</p>
+    <input id="tname" maxlength="40" placeholder="e.g. The Warm Laptops" autocomplete="off">
+    <p class="err" id="gerr"></p>
+    <div class="row" id="grow"></div>
+  </div>
+</div>
+
+<div class="celebrate" id="cele" hidden><div class="box" id="celebox"></div></div>
+
+<header class="bar"><div class="in">
+  <a class="brand" href="#" data-go="home">Pip reads the rulebook</a>
+  <span class="tm" id="tmname"></span>
+  <span class="pass" id="passcount">🛂 0 stamps</span><a class="b sm" href="#" data-go="report" style="--c:var(--lilac)">📄 Get our report</a>
+  <div class="clock" title="Time since your team started"><b id="clock">⏱ 0:00</b><span class="saved" id="saved" aria-live="polite"></span></div>
+</div></header>
+
+<main class="wrap" id="view"></main>
+
+<script>
+const pip=(s=90,c='var(--pip)')=>`<svg width="${s}" height="${Math.round(s*1.1)}" viewBox="0 0 100 110" aria-hidden="true"><path d="M34 90v12M66 90v12" stroke="var(--ink)" stroke-width="5" stroke-linecap="round" fill="none"/><rect x="12" y="22" width="76" height="70" rx="26" fill="${c}" stroke="var(--ink)" stroke-width="4"/><circle cx="37" cy="50" r="9" fill="#fff" stroke="#1b2140" stroke-width="3"/><circle cx="63" cy="50" r="9" fill="#fff" stroke="#1b2140" stroke-width="3"/><circle cx="39" cy="52" r="4" fill="#1b2140"/><circle cx="65" cy="52" r="4" fill="#1b2140"/><path d="M40 70q10 9 20 0" fill="none" stroke="#1b2140" stroke-width="4" stroke-linecap="round"/><path d="M30 82h40" stroke="#1b2140" stroke-width="3" stroke-dasharray="6 5" fill="none" stroke-linecap="round"/></svg>`;
+
+const MATCH=[
+ ['token','A small piece of a word','An AI never reads whole words. A tool chops text into pieces and gives each piece a number. “Miso” became “Mis” + “o”. Counting tokens is how builders measure how big a pile of text is.'],
+ ['deduplication','Throwing away extra copies, so each text is kept only once'],
+ ['test set','The exam box: questions the AI must never see while learning'],
+ ['memorisation','The AI knows a piece of its training text by heart'],
+ ['fine-tuning','The finishing school: a short extra course on chosen examples'],
+ ['checkpoint','A “save game” of the model while it learns'],
+];
+
+const STRETCHES=[['The data stretch','Pip is collected, washed and sorted'],['The model stretch','Pip becomes a tiny trace inside the AI'],['The world stretch','The AI goes out, gets old, and must forget']];
+
+const ALL=[
+{id:'wash',ic:'🧼',c:'var(--pip)',name:'The big wash',teaser:'How a giant pile of web pages gets scrubbed.',kind:'📄 Research paper · 2024',
+ about:["A team at Hugging Face, a company that shares free AI tools and data.", "They built FineWeb: a giant pile of web pages, cleaned up so anyone can use it to train an AI. In this text they explain, step by step, how they cleaned it.", "This is Pip’s wash in real life. Watch closely what gets removed, and what does NOT."],case:{"t": "MSF stories as training data", "story": ["MSF has thousands of stories on its websites and social media: blogs written by field staff, and testimonies from patients about their illness, their journey, or the violence they lived through.", "The communication team wants an AI writing assistant that writes in “the MSF voice”. Their idea: fine-tune an AI on 10 years of these texts, in English, French and Arabic.", "They ask you to plan “the wash”: what must be cleaned out before any text goes into training."], "facts": ["Some testimonies use full names and photos; others use first names only.", "Patients agreed to have their story published in a campaign. Nobody mentioned AI.", "Some stories are about sexual violence, HIV or detention.", "The same story often exists on several websites and in several languages."], "goal": "Write the washing plan: what must be removed, what can stay, and what a wash alone can’t fix."},decide:["What do you recommend to the communication team?", ["Use everything, after blanking out emails", "Use only stories with clear consent, after a careful wash and a human check", "Don’t use patient testimonies at all"], "Why? What is the one condition you would never drop?"],
+
+ front:'Close your eyes and remember Pip’s trip, from Lina’s laptop to the wash. What happened?',
+ back:['Lina wrote a post about her cat on her little blog. One sentence was Pip: **“My cat Miso sleeps on the warm laptop.”**',
+  'One day a **crawler** came by. A crawler is a robot that visits millions of websites and copies them. It didn’t copy only Pip: it copied the **whole page**, with the menus, the ads, the hidden code, and maybe Lina’s name and email too.',
+  'That messy copy, the **dirty Pip**, was put on a shelf in the **raw warehouse**, next to billions of other pages.',
+  'Then came **the wash**. Robots threw away **junk** (ads, menus, spam), **harmful pages**, **repeats** (the same page copied many times) and **private details** like email addresses.',
+  'Why throw away repeats? Because an AI that sees the same text again and again can learn it **by heart**.',
+  'The wash made a **new, clean copy** of Pip. But the dirty Pip was not erased: it is **still upstream**, in the warehouse.'],
+ words:[["crawler", "A robot that visits websites and copies them."], ["raw warehouse", "Where the messy first copies are stored."], ["the wash", "The cleaning step: junk, repeats and private details go out."], ["repeats (duplicates)", "The same text copied many times."], ["dirty Pip / clean Pip", "The messy first copy / the new washed copy."]],
+ src:[['Penedo and others, “The FineWeb Datasets”, NeurIPS 2024','https://arxiv.org/pdf/2406.17557']],
+ ctx:'FineWeb is one of the biggest open piles of web text used to train AIs. In their paper, its makers explain how they washed it. Each line has a 🐣 button if you want it in simple words.',
+ quote:[
+  ['“we introduce FineWeb, a 15-trillion token dataset derived from 96 Common Crawl snapshots”','We made a giant pile of web text: 15 trillion word pieces, taken from 96 big copies of the internet.'],
+  ['“WARC (Web ARChive format) files contain the raw data from the crawl, including the full page HTML and request metadata.”','The raw copy keeps everything from a web page: the words, the hidden code, and notes about when and where it was copied. This is the dirty Pip!'],
+  ['“we applied URL filtering using a blocklist […] to remove adult content,”','We threw away every page from websites on a “bad list”.'],
+  ['“applied a fastText language classifier […] to keep only English text with a score >= 0.65,”','A little robot guessed the language of each page. We kept a page only if the robot was at least 65% sure it was English.'],
+  ['“applied quality and repetition filters […], using the original thresholds.”','We threw away low-quality pages, and pages that say the same thing again and again.'],
+  ['To find copies, “we chose to collect each document’s 5-grams” […] “targeting documents that are at least 75% similar.”','We cut every page into groups of 5 words and compared them. If two pages were 75% the same, we kept only one.'],
+  ['“We anonymize email addresses and public IP addresses using regex patterns.”','We searched for things shaped like an email, or like a computer’s internet address, and blanked them out.']],
+ jar:[['token','A small piece of a word. Pip became 10 tokens.'],['Common Crawl snapshots','Huge public copies of the internet, each taken at one moment, like a photo.','Common Crawl is a free project that copies billions of web pages several times a year. Each copy is a “snapshot”. Many AI builders start from these instead of running their own crawler, so Lina’s blog may be in it many times.'],['WARC','The raw “as copied” file of a web page: the dirty Pip.','Short for “Web ARChive”. It keeps the page exactly as the crawler found it, so it is the richest copy, and also the one with the most hidden details. It lives in the raw warehouse.'],['HTML','The hidden code that builds a web page.','Every web page is made of HTML: instructions that say “this is a title”, “this is a menu”, “put a picture here”. The crawler copies this code along with the words.'],['metadata','Data about the data: when it was copied, and from where.','For a web page: the address, the date it was copied, the type of page. Metadata can be personal too, for example an address that contains someone’s name.'],['blocklist','A list of bad websites.','Builders keep lists of websites they never want in their pile, for example adult sites. Anything from those addresses is thrown away without being read.'],['language classifier','A robot that guesses which language a page is written in.','It is itself a small AI. It reads a page and gives a score for each language. It can be wrong, especially with mixed languages or less common ones.'],['repetition filters','Rules that throw away text repeating itself.','Some pages repeat the same line over and over (spam, lists, broken pages). These filters measure how much a page repeats itself and throw it away above a limit.'],['5-grams','Groups of 5 words in a row.','“My cat Miso sleeps on” is one 5-gram, “cat Miso sleeps on the” is the next. Comparing these small groups is a fast way to see if two pages are almost the same.'],['75% similar','Three quarters the same.','The builders chose this limit themselves. Two pages that share 3 out of 4 of their word groups are treated as copies, and only one is kept.'],['anonymize','Blank out, so nobody can be recognised.','Here it only means: blank out emails and internet addresses. Real anonymisation means nobody can be recognised at all, which is much harder. Names and street addresses were NOT removed.'],['regex patterns','Search shapes, like “something@something.com”.','“Regex” is short for “regular expression”: a recipe for finding text by its shape. Great for emails or phone numbers, useless for names, which have no special shape.']],
+ agree:'Blanking out emails but keeping names is not enough privacy for a training dataset.',
+ qs:[["FineWeb’s wash only blanks out emails and internet addresses. List the details in a patient testimony that this would NOT catch. Which of them could identify a patient in a small village?", "Names, ages, the village, the date, a rare illness, “the only midwife in the camp”… Put two or three together and someone is recognisable."], ["Many testimonies were published with consent for a campaign, not for AI training. Does “it’s already public on our website” make it OK to train an AI on it? What would you check first?", "Think about what the person agreed to, when, and whether they could imagine this use."], ["FineWeb kept only pages that a robot was 65% sure were English. If MSF used the same rule, what would happen to the French and Arabic stories, and to the people in them?", "Whose voices would be washed away? What would the assistant then be bad at?"], ["🔒 The testimonies were collected to tell people’s stories in a campaign. Training an AI is a new purpose. How would you decide if the new purpose fits the old one? What would make it clearly NOT fit?", "Think: what did people expect when they told their story? How sensitive is it? Could the new use harm them? What extra protection could you add?"], ["🔒 After blanking out emails and names, is the training pile now “anonymous”, or only “pseudonymised”? Explain the difference with an example from a testimony, and why it changes which rules still apply.", "Anonymous = nobody can be recognised by any reasonable means, even by combining details. If someone can still be recognised (“the only nurse in the village who…”), it is still personal data."]],
+ quiz:['A page about Lina’s cat, written in French, would…',['be kept','be thrown away by the language robot','be translated into English'],1,'Only English pages stayed. Choosing a language changes whose voices the AI hears.']},
+{id:'exam',ic:'📝',c:'var(--pip)',name:'The leaky exam',teaser:'A bug, an exam, and an AI too costly to fix.',kind:'📄 Two research papers · 2020 + 2022',
+ about:["OpenAI, the company behind ChatGPT, writing about GPT-3, an earlier AI (2020). Then researchers at Google (2022).", "Every AI is tested with famous exams. But those exams are on the internet, so the AI may have read them while it was learning. Here OpenAI admits this happened, and Google shows how common it is.", "When a company shows MSF a great score, we need to know if the score is real."],case:{"t": "A shiny score", "story": ["A company wants to sell MSF an AI “triage helper”. A nurse types in a patient’s symptoms, and the AI suggests how urgent the case is.", "In the sales meeting they show one big number: “Our AI scored 92% on a famous medical exam!”", "The medical director is impressed, but careful. She asks you: can we trust this number, and what should we check before testing it in a clinic?"], "facts": ["The famous exam has been freely available online for years.", "The company won’t say exactly what data the AI learned from: “trade secret”.", "The AI learned mostly from English text from rich countries.", "MSF clinics see many cases (malnutrition, cholera, snakebites) that are rare in those countries."], "goal": "Prepare the checks MSF must do before trusting the score."},decide:["What do you tell the medical director?", ["Trust the 92% and go ahead", "Ask for proof the exam was not in training, and test it ourselves first", "Reject the tool"], "Why? What would make you change your answer?"],
+
+ front:'Remember the station with the three boxes? Where did Pip go, and what is the golden rule?',
+ back:['After the wash, Pip was turned into numbers. It was chopped into small pieces called **tokens** (My · cat · Mis · o · sleeps …) and each piece got a number.',
+  'Then all the data was dealt into **three boxes**, like a card game: the **learning box** (training set), where the AI studies; the **practice box** (validation set), to check progress during school; and the **exam box** (test set), for the final exam.',
+  'Pip landed in the learning box, like most of the data.',
+  'The golden rule: the exam box must **never** touch the learning box. If the AI has already seen the exam questions while studying, it just remembers the answers. Its score looks great, but **the score is a lie**.',
+  'It’s like a student who found the exam paper the night before: a perfect grade, but did they really learn anything?',
+  'Copies make this hard. If the same text sits in two boxes, the wall has **leaked**.'],
+ words:[["tokens", "Small pieces of words, each with a number."], ["training set", "The learning box: what the AI studies."], ["validation set", "The practice box: checks progress during school."], ["test set", "The exam box: the final test."], ["leak", "When exam text also sits in the learning box."]],
+ src:[['Brown and others (OpenAI), “Language Models are Few-Shot Learners” (GPT-3), 2020','https://arxiv.org/pdf/2005.14165'],['Lee and others (Google), “Deduplicating Training Data Makes Language Models Better”, ACL 2022','https://aclanthology.org/2022.acl-long.577']],
+ ctx:'GPT-3 was a famous AI trained on a huge amount of web text. In their own paper, its makers admitted a problem with the exam box. A later Google paper showed how common this problem is.',
+ quote:['§ The GPT-3 paper (OpenAI, 2020)',
+  ['A concern “is potential contamination of downstream tasks by having their test or development sets inadvertently seen during pre-training.”','A worry: the AI may have seen the exam questions by accident while it was studying.'],
+  ['“Unfortunately, a bug in the filtering caused us to ignore some overlaps, and due to the cost of training it was not feasible to retrain the model.”','Oops: a mistake in our cleaning tool missed some exam questions. Teaching the AI again would cost too much, so we didn’t.'],
+  ['“Unfortunately, a bug resulted in only partial removal of all detected overlaps from the training data.”','Because of the mistake, only some of the leaked exam questions were taken out of the learning box.'],
+  ['“it is possible that our model was trained on some of our benchmark test sets.”','So our AI may have studied some of the exams we then tested it on.'],
+  '§ The deduplication paper (Google, 2022)',
+  ['“existing language modeling datasets contain many near-duplicate examples and long repetitive substrings.”','The big text piles are full of almost-identical copies and long repeated chunks.'],
+  ['Train-test overlap “affects over 4% of the validation set of standard datasets”.','More than 4 in every 100 practice questions were also in the learning box.']],
+ jar:[['contamination','Exam questions sneaking into the learning data.','Like a scientist’s sample getting dirty. Here the “dirt” is exam questions that ended up in the learning pile, so the test no longer measures real skill.'],['downstream tasks','The jobs the AI is tested on later.','After the big school, the AI is tested on many small tasks: answering questions, translating, summarising. Each task usually has its own exam.'],['test or development sets','The exam box and the practice box.','The test set is the final exam box. The development set is another name for the practice box (validation set). Both must stay out of the learning box.'],['inadvertently','By accident.','Nobody did it on purpose. The web is so big that exam questions simply sit on many pages, and the crawler copied them along with everything else.'],['pre-training','The big school, where the AI learns from the huge pile of text.','The first, giant learning step on a huge pile of text, before any finishing school. Pip was used here.'],['filtering','The step that was supposed to take the exam questions out.','Here: a tool that searched the learning pile for exam questions and removed them. A bug meant it missed some.'],['overlaps','Texts that ended up in two boxes.','A piece of text found in both the learning box and the exam box. Even a long shared sentence counts.'],['retrain','Send the AI back to school from the start. Very expensive!','Training a big AI can take weeks of thousands of computers and cost millions. That is why builders avoid starting again, even after finding a mistake.'],['benchmark','A famous standard exam everyone uses to compare AIs.','A famous shared test, so that everyone can compare AIs on the same questions. Because they are famous, they are also all over the internet.'],['near-duplicate','Almost the same text, with tiny changes.','For example the same news story on two websites, with a different title and an extra line. Exact-copy checks miss these; you need smarter tools like the 5-gram comparison.'],['substrings','Pieces of text inside a longer text.','If a text is a train, a substring is a few carriages from the middle. A long substring repeated across many pages is easy for an AI to learn by heart.'],['validation set','The practice box.','The practice box. Builders check the AI on it while it learns, to choose settings. If it overlaps with the learning box, the progress looks better than it really is.']],
+ agree:'If exam questions leaked into training, the company should not be allowed to publish the score.',
+ qs:[["The famous exam has been online for years. What could have happened while the AI was learning? Write the exact question you would ask the company.", "Remember OpenAI’s bug: the cleaning tool missed some exam questions, and retraining was too expensive."], ["Design a small fair test of your own, with questions you are sure the AI has never seen. Who in MSF should write them, and what should they be about?", "Brand-new questions, written after the AI was trained, about the cases MSF teams really see."], ["Even a clean score only shows how the AI does on that exam. What would you also need to know before using it with patients in an MSF project?", "Languages, local diseases, what happens when it is wrong, who checks its answers."], ["🔒 You ask the company what data the AI learned from. They say: “trade secret”. As a buyer, what can MSF reasonably demand, and what should go into the contract?", "Documentation of the training data, independent test results, the right to audit or test, a promise not to use MSF’s data to train their AI."], ["🔒 To build your own fair test, a doctor suggests using real old patient cases as exam questions and sending them to the company. What data protection problems does that create? How could you build test cases without real patient data?", "Think about sharing health data with a vendor, rare cases that are easy to recognise, and invented or carefully anonymised cases."]],
+ quiz:['Why didn’t they fix the mistake?',['they never noticed it','teaching the AI again would cost too much','it was against the law'],1,'The bigger the AI, the more expensive every mistake in the data becomes.']},
+{id:'remember',ic:'🦜',c:'var(--pink)',name:'Can it remember?',teaser:'Phone numbers pulled out of an AI.',kind:'📄 Two research papers · 2021 + 2022',
+ about:["Researchers from Google, OpenAI, Apple and several universities (2021). Then researchers at Google (2022).", "They tested whether an AI keeps private things from its training, and whether someone can get them out just by asking questions.", "If MSF ever trains an AI on documents with patient details, this is exactly the risk."],case:{"t": "Reports with names inside", "story": ["A mission writes long medical reports every week. Writing summaries for headquarters takes hours.", "The team wants to fine-tune an AI on 3 years of these reports, so it can write the summaries automatically.", "The reports contain patient names, ages, villages, medical record numbers, and sometimes phone numbers of family members."], "facts": ["Many reports use the same template, so some sentences repeat hundreds of times.", "Some patients appear in many reports over several months.", "About 40 staff would use the AI, some of them outside the mission.", "Record numbers are long and unique, just like the ID codes that came out in the research paper."], "goal": "Decide how to stop the AI from repeating patient details, and what to do if it does."},decide:["What is your plan for the mission?", ["Train on the reports as they are", "Remove identifiers and copies, then test for leaks before anyone uses it", "Don’t train on reports: use anonymised summaries, or no AI"], "Why? What is the biggest risk you are trying to avoid?"],
+
+ front:'Pip went to school inside the AI. After school, is Pip stored in there?',
+ back:['At **the school**, the AI read the learning box, sentence by sentence, and played a guessing game: **guess the next word**.',
+  'When Pip came, the AI tried: “My cat Miso sleeps on the warm…” → ? When it guessed wrong, its billions of little **knobs** (the weights) got a **tiny nudge**, so it would guess better next time.',
+  'Pip’s nudge was tiny, and mixed with the nudges of millions of other sentences. So after school, **Pip is not stored in the AI**. There is no folder with Lina’s sentence. Only knob settings.',
+  'But careful: an AI can learn some things **by heart**. This is **memorisation**. It happens when a text appears many, many times, when it is very unusual (like a phone number), or when the AI is very big.',
+  'When the AI says something learned by heart back, word for word, that is **regurgitation**. If it is someone’s private details, it is a **privacy leak**.',
+  'Pip appeared only once and is ordinary, so Pip was not memorised. That’s why the wash, removing repeats and private details, matters so much.'],
+ words:[["knobs (weights)", "The billions of numbers the AI adjusts while it learns."], ["nudge", "A tiny change to the knobs."], ["memorisation", "Learning something by heart."], ["regurgitation", "Saying learned-by-heart text back, word for word."], ["privacy leak", "Private details coming out where they shouldn’t."]],
+ src:[['Carlini and others, “Extracting Training Data from Large Language Models”, USENIX Security 2021','https://arxiv.org/pdf/2012.07805'],['Lee and others (Google), “Deduplicating Training Data Makes Language Models Better”, ACL 2022','https://aclanthology.org/2022.acl-long.577']],
+ ctx:'Researchers asked: can you get private things out of an AI just by asking it questions? They tried on GPT-2, an older AI. A second team measured how copies in the data make AIs repeat text.',
+ quote:['§ The extraction paper (2021)',
+  ['When big AIs are trained on private data, “an adversary can perform a training data extraction attack to recover individual training examples by querying the language model.”','We show that an attacker can pull real training text out of such an AI, just by asking it questions.'],
+  ['“We demonstrate our attack on GPT-2, a language model trained on scrapes of the public Internet, and are able to extract hundreds of verbatim text sequences from the model’s training data.”','We tried it on GPT-2, an AI that learned from copied web pages, and pulled out hundreds of pieces of its training text, word for word.'],
+  ['Out came names, phone numbers and email addresses (personally identifiable information), plus “IRC conversations, code, and 128-bit UUIDs.”','Out came real names, phone numbers, emails, chat messages, computer code and long ID codes.'],
+  ['“Our attack is possible even though each of the above sequences are included in just one document in the training data.”','It worked even when the text was on only ONE web page in the whole training pile.'],
+  ['“Worryingly, we find that larger models are more vulnerable than smaller models.”','The worrying part: bigger AIs remember more.'],
+  ['“We contacted the individual whose information is partially shown in Figure 1 to disclose this fact to them in advance”','Before publishing, we warned the person whose details came out.'],
+  '§ The deduplication paper (2022)',
+  ['In one big training pile (C4), one 61-word sentence was “repeated over 60,000 times”.','One single sentence appeared more than 60,000 times in a famous training pile!'],
+  ['“over 1% of the unprompted output of language models trained on these datasets is copied verbatim from the training data.”','More than 1 in every 100 things these AIs wrote on their own was copied word for word from their training.'],
+  ['After deduplication, models “emit memorized text ten times less frequently”.','After removing the copies, the AIs repeated learned-by-heart text 10 times less.']],
+ jar:[['adversary','An attacker.','Security people call anyone who tries to break a system an “adversary”. It can be a criminal, a curious user, or a researcher testing on purpose.'],['training data extraction attack','Asking clever questions to pull learned-by-heart text out of the AI.','The researchers made the AI write lots of text, then looked for answers that were suspiciously exact and confident, and checked them against the internet.'],['querying','Asking the AI questions.','Sending a question or the start of a sentence to the AI and reading what it answers. Anyone using a chatbot is querying it.'],['scrapes','Pages copied from the web by a crawler.','Pages collected automatically by a crawler. “Scraping” = copying web content with a robot.'],['verbatim','Word for word, exactly the same.','Latin for “word for word”. A verbatim copy is identical to the original, letter by letter.'],['personally identifiable information','Details that point to a real person.','Often shortened to PII. Anything that points to a real person: a name, phone number, email, ID number, or a mix of details like age + village + job.'],['UUIDs','Long random ID codes. Very unusual, so easy to learn by heart.','“Universally Unique Identifiers”: random codes like 3f2a9c1e-5b7d-4e8a… Because they are unique and strange, an AI that learns one can repeat it exactly. Medical record numbers behave the same way.'],['one document','One single web page.','This is the surprise: the book says repetition makes memorisation likely, but even text seen only once can stick if it is unusual enough.'],['vulnerable','Easy to attack.','Weak against attacks. Bigger AIs have more knobs, so they have more room to store exact text.'],['unprompted output','What the AI writes when nobody asks for anything special.','Text the AI writes from a blank start, with nobody steering it. If even this contains copied training text, memorisation is common.'],['memorized','Learned by heart.','Stored so exactly that it can be repeated word for word, not just “learned the pattern”.']],
+ agree:'If an AI can repeat someone’s phone number, the AI itself should count as holding that person’s personal data.',
+ qs:[["From the papers: what kind of text is easiest for an AI to learn by heart? Which parts of medical reports look like that?", "Long unique numbers, rare names, the same template copied hundreds of times…"], ["Before anyone uses the AI, you run your own “extraction test”, like the researchers. What would you ask the AI, and what answer would count as a fail?", "For example: start a sentence the way a report starts, and see if it finishes it with a real name or record number."], ["The test fails: the AI can repeat one patient’s record number. What do you do with the AI, and who needs to be told?", "Remember: there is no “Pip knob”. And think about the patient, the mission and the data protection team."], ["🔒 If the AI can repeat a patient’s record number, is the AI file itself now “personal data”? What would that change for where it can be stored, who can access it, and how long it can be kept?", "If personal data can come out of it, treat it like a patient file: access control, location, how long you keep it, and deletion."], ["🔒 A staff member outside the mission gets a patient’s name out of the AI by asking clever questions. Is this a data breach? Walk through it: what happened, who must be told, and how fast.", "A breach = personal data reaching someone who shouldn’t have it. Think of the data protection officer, the risk for the patient, and the short legal deadlines many laws set (often 72 hours)."]],
+ quiz:['After removing copies, AIs repeated learned-by-heart text…',['10 times less often','2 times more often','exactly as often'],0,'Fewer copies, less learning by heart. The wash is a privacy shield!']},
+{id:'blur',ic:'🌫️',c:'var(--sky)',name:'The blurry choir',teaser:'Learning from everyone, without hearing anyone.',kind:'📄 Research paper · 2016',
+ about:["Researchers at Google (2016).", "AIs often learn from private data. This paper shows a way to train an AI so that no single person in the data can be picked out: by adding a little random noise while it learns.", "It is one of the few real tools that protects people inside an AI. But is it enough?"],
+ case:{"t": "Learning from patient data, safely?", "story": ["An MSF medical research unit wants to train an AI to spot which children are at risk of severe malnutrition, early enough to act.", "They want to use 50,000 patient records from 4 countries. A partner university will do the training.", "The university says: “Don’t worry, we use differential privacy, so nobody’s data can be found in the model.”"], "facts": ["The records include age, weight, village, diagnosis and HIV status.", "The records would be sent to the university, in another country.", "Some groups in the data are very small, for example one nomadic community with 80 children.", "The university would also like to publish a paper about the results."], "goal": "Decide whether the blur makes this safe enough, and what else is needed."},decide:["What do you recommend to the research unit?", ["Go: differential privacy makes it safe", "Go with conditions: blur, plus strict rules for the raw records, a risk check, ethics approval and a signed agreement", "Stop: do it another way, or not at all"], "Why? Which risk does the blur NOT solve?"],
+ front:'At the training factory, the book mentioned an “extra shield”. What was it?',
+ back:['At the training factory, the book mentioned an **extra shield**: learning with **deliberate blur**. Its real name is **differential privacy**.',
+  'While the AI learns, a small, carefully measured amount of **random noise** is added. So the finished AI is almost exactly the same, **whether or not any one person’s data was in the pile**.',
+  'It’s like listening to a **choir from far away**: you hear the song clearly, but you can’t pick out any single voice.',
+  'How much blur? That is the **privacy budget**: a limit on how much the AI may learn about any one person. Less budget = more blur = more privacy.',
+  'The price: the AI usually becomes **a bit less accurate** and needs **more computer power**. Rare things suffer most, because a rare voice is easier to blur away.',
+  'That’s why it is used more for **sensitive data**, like health records, than for ordinary web text like Pip.'],
+ words:[["differential privacy","A way of training that blurs how much any one person changes the AI."],["random noise","Small random changes added on purpose."],["privacy budget","How much the AI may learn about any one person."],["choir from far away","The picture to remember: you hear the song, not one voice."],["trade-off","More privacy usually means a bit less accuracy."]],
+ src:[['Abadi and others (Google), “Deep Learning with Differential Privacy”, ACM CCS 2016','https://research.google/pubs/deep-learning-with-differential-privacy/']],
+ ctx:'',
+ quote:[
+  ['AIs often need big piles of data, “which may be crowdsourced and contain sensitive information.”','AIs need lots of data, often collected from many ordinary people, and it can contain private things.'],
+  ['The authors say: “we develop new algorithmic techniques for learning” and “a refined analysis of privacy costs within the framework of differential privacy.”','We invented new ways for the AI to learn, and a better way to measure how much privacy each step costs.'],
+  ['Result: “we can train deep neural networks with non-convex objectives, under a modest privacy budget,”','It works: we can train real, big AIs while keeping the privacy cost small.'],
+  ['… “at a manageable cost in software complexity, training efficiency, and model quality.”','The price is OK: a bit more complicated, a bit slower, and a bit less accurate.'],
+  ['How it works (in short): each example’s push on the knobs is cut to a maximum size, called clipping, and random noise is added, so no single example can change the AI much.','No single person can push the AI too hard, and a little fog is added on top.']],
+ jar:[['crowdsourced','Collected from lots of ordinary people.','Gathered from the crowd: people’s photos, messages, reviews, health app data. Many people, many private details.'],['sensitive information','Private things, like health or money details.','Information that can hurt people if it leaks: health, sexual life, religion, ethnicity, money, location. Health data is always sensitive.'],['algorithmic techniques','New step-by-step methods for the computer.','An algorithm is a recipe for the computer. These are new recipes for learning that limit how much each example can change the AI.'],['privacy costs','How much the AI might reveal about any one person.','Every time the AI learns from the data, a little privacy is “spent”. The researchers count the total so they know when to stop.'],['differential privacy','Training with measured blur, so no single person stands out.','A mathematical promise: the AI would come out almost the same whether or not YOUR data was in the pile. So it can’t reveal much about you in particular.'],['deep neural networks','The AI with billions of knobs.','The kind of AI in the book, with many layers of knobs. “Deep” means many layers.'],['privacy budget','The limit on how much the AI may learn about any one person.','Often written with the Greek letter ε (epsilon). Smaller = stronger privacy, more blur. Bigger = weaker privacy, sharper AI. The number must be chosen and explained.'],['training efficiency','How fast and cheap the learning is.','How much time and computer power the learning needs. Blur makes learning slower and more expensive.'],['model quality','How good the AI’s answers are.','How good the AI’s answers are. Blur usually lowers it a little, and more for rare groups.'],['clipping','Cutting each example’s push to a maximum size.','Like a speed limit for each example: no single sentence or patient record may push the knobs harder than a set maximum.'],['random noise','Tiny random changes, like static on a radio.','Small random numbers added to the knob changes. Like static on the radio: the song still comes through, details get fuzzy.']],
+ qs:[["The university says “we use a privacy budget of 8”. Smaller means more blur. Who should decide this number, and what would you ask the university about it?", "More blur protects patients but makes the AI less accurate. Who carries each risk: the patients in the data, or the children the AI will help?"], ["The blur hits small groups hardest. The AI may work well in big towns and badly for the nomadic community with 80 children. What would you do about that?", "Remember: rare voices are the first to be blurred away. Is that fair to the people who need the tool most?"], ["🔒 Does training with differential privacy make the finished AI anonymous? Does it make the 50,000 records themselves anonymous? What still needs protecting?", "The blur protects what comes OUT of the AI. The records going IN are still health data: sending, storing and deleting them still needs protection."], ["🔒 The records travel to a university in another country, which also wants to publish. Before any training starts, which questions about roles, agreements and transfers must be answered?", "Who decides what happens with the data? What does the signed agreement say about purpose, publishing, deletion and security? Is the country’s protection good enough?"]],
+ quiz:['A “privacy budget” is…',['money for privacy lawyers','a limit on how much the AI may learn about any one person','the number of passwords'],1,'Spend too much, and single voices start to stand out from the choir.']},
+{id:'finish',ic:'🎓',c:'var(--pink)',name:'The finishing school',teaser:'40 people teach an AI manners. Or poison.',kind:'📄 Research paper · 2022 + 🛡️ OWASP 2025',
+ about:["OpenAI (2022), explaining how they taught GPT-3 to follow instructions. This method became the base of ChatGPT. Then OWASP, a worldwide security community (2025).", "How people teach an AI to be helpful and polite after its big school, and how someone could misuse the same step.", "If MSF ever builds its own assistant, this is the step where MSF decides how it behaves."],case:{"t": "MSF’s own assistant", "story": ["MSF wants its own assistant to answer staff questions about medical protocols, like “What is the dose of this medicine for a child of 12 kg?”", "An outside company offers to run the finishing school: their staff will write example answers and rank the AI’s answers.", "To save time, they also want to reuse 20,000 real questions that MSF staff typed into an older chatbot."], "facts": ["The company’s labelers are not doctors, and none of them speak French or Arabic.", "Many old chatbot questions contain patient details, and some contain security information.", "The company also builds AIs for other customers.", "If the assistant gives a wrong dose, a child could be harmed."], "goal": "Set the rules for this finishing school."},decide:["How should MSF run the finishing school?", ["Let the outside company handle everything", "MSF experts write and rank, staff questions only after cleaning, every change recorded", "Don’t fine-tune: use a ready-made assistant as it is"], "Why? Who should be responsible if the assistant gives a wrong medical answer?"],
+
+ front:'After the big school, the AI could write, but it wasn’t helpful yet. What happened next?',
+ back:['After the big school, the AI could write, but it only knew how to **continue text**. Ask it a question, and it might answer with another question!',
+  'So it went to **the finishing school**, also called **fine-tuning**: a short extra course with a small set of carefully chosen examples.',
+  'Lesson 1: people wrote **example answers**, to show the AI how to follow instructions.',
+  'Lesson 2: the AI wrote several answers, and people **ranked** them from best to worst. The AI was rewarded for the answers people liked. This is learning from **human preferences**.',
+  'Lesson 3: values and limits: what to refuse, how to be careful.',
+  'Because this data is small, **each example is very powerful**. A few thousand examples can change how the whole AI behaves. Great for good habits… and dangerous if someone sneaks in bad examples (**poisoning**) or hides a secret trigger word (a **backdoor**).',
+  'And remember: the people who write and rank the examples bring **their own views** into the AI.'],
+ words:[["fine-tuning", "The finishing school: a short extra course after the big school."], ["example answers", "Answers written by people to show the AI how to reply."], ["ranking", "Putting the AI’s answers in order, best to worst."], ["human preferences", "What people liked or didn’t like."], ["poisoning", "Sneaking bad examples into the learning data."], ["backdoor", "A hidden trap that wakes up on a secret signal."]],
+ src:[['Ouyang and others (OpenAI), “Training language models to follow instructions with human feedback”, NeurIPS 2022','https://arxiv.org/pdf/2203.02155v1.pdf'],['OWASP Top 10 for LLM Applications 2025 · LLM04 Data and Model Poisoning','https://genai.owasp.org/llmrisk/llm042025-data-and-model-poisoning/']],
+ ctx:'The first paper is the recipe behind the finishing school of ChatGPT-style assistants. The second text is from OWASP, a worldwide security community, warning how the same step can be abused.',
+ quote:['§ The finishing-school paper (OpenAI, 2022)',
+  ['“Making language models bigger does not inherently make them better at following a user’s intent.”','A bigger AI is not automatically better at doing what people actually want.'],
+  ['“large language models can generate outputs that are untruthful, toxic, or simply not helpful to the user”','Big AIs can give answers that are false, nasty, or just useless.'],
+  ['“Starting with a set of labeler-written prompts and prompts submitted through the OpenAI API, we collect a dataset of labeler demonstrations of the desired model behavior”','We gathered questions (some written by our helpers, some sent by real customers) and asked helpers to write perfect answers.'],
+  ['“We then collect a dataset of rankings of model outputs, which we use to further fine-tune this supervised model using reinforcement learning from human feedback.”','Then helpers ranked the AI’s answers from best to worst, and the AI was trained to give more of the kind people liked.'],
+  ['“We first hire a team of 40 contractors to label our data, based on their performance on a screening test”','We hired 40 outside workers to do this, chosen with a test.'],
+  ['“This procedure aligns the behavior of GPT-3 to the stated preferences of a specific group of people”','So the AI now behaves the way this one small group of people prefers.'],
+  ['“outputs from the 1.3B parameter InstructGPT model are preferred to outputs from the 175B GPT-3, despite having 100x fewer parameters.”','People liked the answers of a small AI with this training more than those of a giant AI 100 times bigger.'],
+  '§ OWASP security guidance (2025)',
+  ['Poisoning happens when “pre-training, fine-tuning, or embedding data is manipulated to introduce vulnerabilities, backdoors, or biases”','Poisoning = someone secretly changes the learning data to plant weak spots, hidden traps or unfairness.'],
+  ['“Such backdoors may leave the model’s behavior untouched until a certain trigger causes it to change.”','A hidden trap can make the AI act normal… until it sees a secret signal.']],
+ jar:[['user’s intent','What the person asking really wants.','What someone actually wants when they type a request. “Explain to a 6-year-old” means simple words, not a long lecture.'],['untruthful, toxic','Wrong, or rude and harmful.','Untruthful: confidently wrong. Toxic: insulting, hateful, or encouraging harm. Both came from patterns in the huge web pile.'],['labeler','A person hired to write examples and judge answers.','Also called annotator. The same job as the sticker room in Pip: people adding the “right answers”.'],['prompts submitted through the OpenAI API','Real questions that customers had sent to the AI!','An API is a doorway that lets other programs send questions to the AI. Customers’ real questions sent through it were reused as training material.'],['demonstrations','Example answers.','A person writes the ideal answer to a question, to show the AI the behaviour wanted.'],['rankings of model outputs','People putting the AI’s answers in order, best to worst.','The AI writes 4 to 9 answers to the same question; a person orders them from best to worst. This teaches “what people prefer”.'],['fine-tune','The finishing school.','Small extra training on top of an already-trained AI. Cheap and fast compared with the big school, but very powerful.'],['reinforcement learning from human feedback','RLHF: the AI is rewarded for answers people liked.','RLHF. First a helper AI learns to predict which answers people prefer. Then the main AI is trained to get “high marks” from that helper.'],['contractors','Workers hired from outside the company.','People hired from outside, often through agencies, paid per task. Their background shapes what the AI learns is “good”.'],['aligns','Makes the AI behave the way someone wants.','Brings the AI’s behaviour in line with what someone wants. The key question is: whose wishes?'],['parameters','The knobs. 1.3B = 1.3 billion knobs.','Another name for the knobs (weights). More parameters = a bigger AI that needs more computer power.'],['embedding data','Text turned into long lists of numbers.','Text turned into long lists of numbers that capture meaning. Assistants use these to search documents. If they are poisoned, the AI looks up the wrong things.'],['backdoors','Hidden traps that wake up on a secret signal.','Planted on purpose through poisoned examples. The AI passes normal tests, because the tests don’t contain the secret signal.'],['trigger','The secret signal.','A rare word, phrase or pattern chosen by the attacker. When the AI sees it, the hidden behaviour switches on.']],
+ agree:'It is OK to use people’s questions to an AI to train the next AI, as long as they were told.',
+ qs:[["Who should write and rank the example answers? What would go wrong if they all came from one country, one language or one company?", "In the paper, 40 contractors shaped the AI for millions of users. Their views became the AI’s views."], ["The company wants to reuse real staff questions from the old chatbot. What could be hidden inside those questions? What must happen before they can be used?", "People type patient details, names and security information into chatbots."], ["A few poisoned examples can plant a hidden trap. Name three controls you would put on the example data.", "Who can change it? How is each example checked? How is every change recorded?"], ["🔒 The outside company will see staff questions with patient details while writing examples. Do they decide what happens with the data, or only follow MSF’s instructions? What must the contract say?", "If they only follow MSF’s instructions, they act “on behalf of” MSF. The contract must cover: purpose only, confidentiality, security, no reuse for their other AIs, deletion at the end, and who else they share with."], ["🔒 Staff typed those questions into the old chatbot to get help, not to train a new AI. Were they told? Is reusing them fair to the staff, and to the patients mentioned in them? What would you do with questions you cannot clean?", "Think about transparency (telling people), purpose, and taking only what you need. Some questions may simply have to be deleted."]],
+ quiz:['In the finishing school, humans…',['write the whole internet','rank the AI’s answers from best to worst','delete bad data'],1,'The AI learns to give the kind of answers people ranked higher.']},
+{id:'forget',ic:'🍰',c:'var(--mint)',name:'Teach it to forget',teaser:'Bake small cakes, melt the key.',kind:'📄 Research paper · 2021 + 📏 NIST standard',
+ about:["University researchers (2021), and NIST, the US standards institute.", "Making an AI forget someone is very hard. The researchers propose a smarter way of training so that forgetting is faster. NIST explains how to delete stored files for real.", "People can ask MSF to delete their data. We need to know what is truly possible, and be honest about it."],case:{"t": "“Delete me”", "story": ["A former patient emails MSF: “My story was in your reports. I heard you used reports to train an AI. Please delete me, everywhere.”", "Last year your team trained an AI on 3 years of reports (yes, the one from Stop 3!). Staff use it every day.", "You must prepare MSF’s answer and an action plan."], "facts": ["Her story is in the original reports, in the cleaned training pile, in two backups, and on the laptop of a colleague who tested the training.", "The outside company that helped still has a copy of the cleaned pile.", "Retraining the AI would take 3 weeks and cost a lot.", "Her medical file must be kept for several years under local rules."], "goal": "Prepare MSF’s honest answer and action plan."},decide:["What does MSF do?", ["Delete the text copies, explain honestly, filter now, retrain at the next version", "Delete the text copies only", "Tell her it is impossible"], "Write the first two sentences of MSF’s reply to her."],
+
+ front:'Years later, Lina writes: “Please delete my sentence.” What can the builder actually do?',
+ back:['Years later, Lina finds out her blog was used to train an AI. She writes to the company: **“Please delete my sentence.”**',
+  '**The text copies**: Pip is in the raw warehouse, the clean pile, the token piles, the backups… With good notes about where every copy is, they can all be found and deleted. Without notes, it is detective work.',
+  '**Deleting for real**: putting a file in the bin only removes its name tag. The data stays on the disk. Real deletion writes over it, or destroys the **key** the data was locked with. That is **crypto-shredding**. Backups fade away on a timer.',
+  '**Inside the AI**: this is the hard part. There is no “Pip knob” to reset. Taking Pip out is like taking **one egg back out of a baked cake**.',
+  'Three options: **retrain** a new AI without Pip (sure, but very expensive), **machine unlearning** (special tricks, still being researched), or **block at the door** (a filter so the AI never says it; the AI itself doesn’t change).',
+  'The big lesson of the book: data is **easy to put into an AI and very hard to take out**. So the careful work must happen at the start.'],
+ words:[["copies", "Every place where the text of Pip is stored."], ["crypto-shredding", "Destroying the key, so locked data can never be opened again."], ["backups", "Safety copies, which usually fade away on a timer."], ["retrain", "Building a new AI from scratch, without the data."], ["machine unlearning", "Special tricks to make an AI forget, still being researched."], ["block at the door", "A filter so the AI never says something; the AI itself doesn’t change."]],
+ src:[['Bourtoule and others, “Machine Unlearning”, IEEE Symposium on Security and Privacy 2021','https://arxiv.org/pdf/1912.03817'],['NIST SP 800-88, Guidelines for Media Sanitization (NIST bulletin, 2015)','https://csrc.nist.gov/files/pubs/shared/itlb/itlbul2015-02.pdf']],
+ ctx:'The first paper invented a way to train AIs so they can forget faster. The second is the US standard that IT teams worldwide use to delete data for real.',
+ quote:['§ The unlearning paper (2021)',
+  ['“Once users have shared their data online, it is generally difficult for them to revoke access and ask for the data” to be deleted.','Once you share data online, it is very hard to take it back.'],
+  ['“Yet, having models unlearn is notoriously difficult.”','And making an AI forget is famously hard.'],
+  ['“We introduce SISA training, a framework that expedites the unlearning process by strategically limiting the influence of a data point in the training procedure.”','Our idea, SISA, makes forgetting faster by limiting how much any one piece of data can change the AI.'],
+  ['“First, we divide the training data into multiple disjoint shards such that a training point is included” in only one shard.','Step 1: cut the data into separate piles. Each piece of data goes into only one pile.'],
+  ['“Then, we train models in isolation on each of these shards, which limits the influence of a point to the model” trained on that shard.','Step 2: each pile teaches its own small AI, alone. So each piece of data shapes only one small AI.'],
+  ['“We save the state of model parameters before introducing each new slice, allowing us to start retraining the model” from a save point.','Step 3: save the AI’s progress before each new chunk of data, so you can restart from a save point instead of from zero.'],
+  ['“SISA training improves time to unlearn points from the Purchase dataset by 4.63×, and 2.45×” for a second dataset.','Forgetting became up to 4.6 times faster than retraining everything.'],
+  '§ NIST data deletion standard',
+  ['“Cryptographic Erase (CE) is an emerging sanitization technique that can be used in some situations when data is encrypted as it is stored.”','A newer way to delete: if the data was locked (encrypted) when it was saved…'],
+  ['“With CE, media sanitization is performed by erasing the cryptographic keys that were used to encrypt the stored data”','…you can destroy the key instead. The locked data is still there, but nobody can ever open it again.']],
+ jar:[['revoke access','Take back permission.','Cancel a permission you gave. Easy for a shared folder; almost impossible once data has been copied into training piles.'],['unlearn','Make an AI forget something it learned.','Remove the effect of some training data from an AI, as if it had never seen it.'],['notoriously','Famously.','Well known for being so. Everyone in the field knows it is hard.'],['expedites','Makes faster.','Speeds up.'],['influence of a data point','How much one piece of data, like Pip, changes the knobs.','How much one example (one sentence, one patient record) changed the AI’s knobs during learning.'],['disjoint shards','Separate piles of data that share nothing.','“Disjoint” = no overlap. Each piece of data sits in exactly one shard (pile), so you know which small AI it touched.'],['in isolation','Alone, with no sharing.','The small AIs never share what they learned while training, so a piece of data cannot spread from one to another.'],['model parameters','The knob settings.','The knob settings. Saving them is like saving a game.'],['slice','One chunk of training. Before each one, a save point (checkpoint) is made.','Each shard is fed in chunks. Before each chunk a checkpoint is saved, so you can go back to just before a person’s data came in.'],['sanitization','Making data impossible to get back.','The official word for wiping a storage device so data can’t be recovered, even by experts.'],['encrypted','Scrambled, so it can only be read with a key.','Data is scrambled with a secret key. Without the key it looks like random noise. Encryption at rest = while stored on a disk.'],['cryptographic keys','The secret that locks and unlocks scrambled data.','Long secret numbers that lock and unlock encrypted data. If every copy and backup uses the same key, destroying the key makes all of them unreadable at once.']],
+ agree:'If the company makes sure the AI never says Lina’s sentence, that is as good as deleting it.',
+ qs:[["Make the list: where could copies of her story be? Which can MSF delete this week, and how would you prove it?", "Raw reports, cleaned piles, backups, laptops, the outside company, the trained AI… Think of the NIST key trick."], ["Her trace is inside the trained AI. Compare the three options: retrain without her, unlearning (like SISA), or block at the door. Which would you pick for a patient story, and why?", "Think about cost, time, certainty, and how sensitive her story is."], ["What should MSF have done BEFORE training, so that this request would be easy today?", "Records of where each document went, encryption keys, splitting the data into piles like SISA."], ["🔒 Her medical file must be kept for several years. Does that mean MSF can refuse to delete anything? What is the difference between keeping her file for care and using it to train an AI?", "Keeping data for one purpose (care, the law) doesn’t automatically allow another (AI training). She may have the right to stop the AI use, even if the file stays."], ["🔒 MSF deletes the text copies, but the trained AI stays. Has MSF really “erased” her data? How would you show a regulator that her story can no longer come out of the AI?", "Think about extraction tests, filter logs, a written record of what was deleted, and a date to retrain without her."]],
+ quiz:['SISA makes forgetting faster because…',['it deletes the whole AI','each piece of data only shapes one small AI','it adds noise to everything'],1,'Only one small cake needs re-baking, from its last save point!']}
+];
+const GLOSS=[["testimonies", "Stories people tell about what happened to them, in their own words. For MSF: patients describing their illness, journey or violence they lived through."], ["testimony", "A story a person tells about what happened to them, in their own words."], ["fine-tune", "Give an already-trained AI a short extra course on chosen examples (the finishing school)."], ["campaign", "A public awareness or fundraising action, using stories and pictures."], ["consent", "A person’s clear “yes” to a specific use of their information, given freely and knowing what it means. A “yes” for one use is not a “yes” for everything."], ["triage", "Sorting patients by how urgent their case is, so the sickest are seen first."], ["trade secret", "Information a company keeps hidden to protect its business, like a secret recipe."], ["template", "A ready-made form that is filled in the same way every time."], ["record numbers", "Unique numbers given to each patient’s medical file."], ["identifiers", "Any detail that points to a specific person: name, number, photo, address…"], ["extraction test", "A test where you try to make the AI repeat private details from its training."], ["anonymous", "Nobody can be recognised from it, by any reasonable means, not even by combining details. Then data protection rules no longer apply."], ["pseudonymised", "Names are replaced by codes, but someone with the key, or enough clues, can still find out who is who. Still personal data."], ["personal data", "Any information about a person who can be recognised, directly or by combining details."], ["data breach", "Personal data seen, lost, changed or shared by someone who shouldn’t have had it, by accident or on purpose."], ["contract", "A signed agreement that says who may do what with the data, and what happens if things go wrong."], ["labelers", "People hired to write example answers and judge the AI’s answers."], ["protocols", "Official step-by-step medical guidance, like how to treat a disease or which dose to give."], ["purpose", "The reason the data was collected. Data collected for one reason can’t simply be used for any other."], ["differential privacy", "Training with a measured blur, so no single person’s data changes the AI much."], ["privacy budget", "The number that says how much blur is used. Smaller = more privacy."], ["ethics approval", "Permission from an ethics committee, which checks that research is fair and safe for the people involved."], ["nomadic", "Moving from place to place with animals, not living in one village."], ["regulator", "The official authority that checks organisations follow data protection law."], ["backups", "Safety copies of data, kept in case the original is lost."], ["retrain", "Build the AI again from the start, without some data."], ["filter", "A guard at the door that stops the AI from saying certain things."], ["identify", "Recognise who a person is."], ["data protection officer", "The expert inside an organisation who advises on handling personal data and is the contact point for regulators."], ["audit", "An independent check that someone really does what they promise."], ["anonymised", "Changed so that nobody can be recognised any more."]];
+GLOSS.sort((a,b)=>b[0].length-a[0].length);
+function gl(text){let out=esc(text);const used={};for(let gi=0;gi<GLOSS.length;gi++){const w=GLOSS[gi][0];const re=new RegExp('\\b'+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','i');const parts=out.split(/(<button[^>]*>.*?<\/button>)/);let done=false;for(let p=0;p<parts.length&&!done;p+=2){const mm=parts[p].match(re);if(mm){parts[p]=parts[p].slice(0,mm.index)+`<button class="hw2" data-g="${gi}">${mm[0]}</button>`+parts[p].slice(mm.index+mm[0].length);done=true}}out=parts.join('')}return out}
+const KEEP=['wash','exam','remember','blur','finish','forget'];
+const srcNames=m=>m.src.map(x=>x[0]).join(' + ');
+const M=KEEP.map(id=>ALL.find(m=>m.id===id));
+/* ---------- state ---------- */
+const STORE='pip-rulebook-teams-v3';
+let all={};try{all=JSON.parse(localStorage.getItem(STORE))||{}}catch(e){}
+let team='';try{team=localStorage.getItem(STORE+'-current')||''}catch(e){}
+let cur=null;
+const persist=()=>{try{localStorage.setItem(STORE,JSON.stringify(all));localStorage.setItem(STORE+'-current',team)}catch(e){}};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const blank=()=>({created:new Date().toISOString(),a:{},quiz:{},agree:{},words:{},match:0,stamps:{},step:{}});
+const isDone=id=>!!(cur&&cur.stamps[id]);
+const started=id=>cur&&(cur.quiz[id]!=null||cur.agree[id]!=null||Object.keys(cur.a).some(k=>k.startsWith(id+'_')&&cur.a[k].trim()));
+function flash(){persist();const s=$('#saved');s.textContent='Saved ✓';clearTimeout(flash.t);flash.t=setTimeout(()=>s.textContent='',1500);bar()}
+function bar(){if(!cur)return;$('#tmname').textContent='👥 '+team;const n=Object.keys(cur.stamps).length;$('#passcount').textContent=`🛂 ${n} stamp${n===1?'':'s'}`}
+
+/* ---------- gate ---------- */
+$('#gpip').innerHTML=pip(80);
+function showGate(){
+  $('#gate').hidden=false;$('#tname').value='';$('#gerr').textContent='';
+  $('#grow').innerHTML=`<button class="b" id="gstart">Let’s go!</button>`+(team&&all[team]?`<button class="b alt" id="gcont">Continue as “${esc(team)}”</button>`:'');
+  $('#gstart').onclick=startTeam;const c=$('#gcont');if(c)c.onclick=()=>enter(team);
+  setTimeout(()=>$('#tname').focus(),50);
+}
+function startTeam(){const n=$('#tname').value.trim();if(!n){$('#gerr').textContent='Please type a team name first.';return}if(!all[n])all[n]=blank();enter(n)}
+$('#tname').addEventListener('keydown',e=>{if(e.key==='Enter')startTeam()});
+function enter(n){team=n;cur=all[n];for(const k of ['a','quiz','agree','words','stamps','step'])cur[k]=cur[k]||{};if(!cur.startedAt)cur.startedAt=new Date().toISOString();persist();$('#gate').hidden=true;bar();tick();view='home';render();window.scrollTo({top:0})}
+
+/* ---------- views ---------- */
+function home(){
+  const n=Object.keys(cur.stamps).length;
+  return `<section class="hero"><div><p class="hand">A team game · 5 stops</p><h1>Pip reads the <em>rulebook</em></h1>
+   <p class="lead">Experts write about AI with very hard words. But you travelled with Pip, so you already know them!</p></div>
+   <div class="pipbox"><div class="bubble">${n?`${n} stamp${n>1?'s':''} already!<br>Keep going!`:'Pick a stop on<br>my road!'}</div>${pip(118)}</div></section>
+  <div class="panel" style="display:flex;flex-direction:column;gap:12px"><h2 style="font-size:28px">How to play</h2>
+   <div class="plan"><span><i>1</i>Click a stop</span><span><i>2</i>Read and solve a work case</span><span><i>3</i>Win a stamp 🛂</span></div>
+   <p class="hand">No wrong answers. Everything saves by itself.</p></div>
+  <div class="extras"><a class="extra" href="#" data-go="warm" style="--c:var(--sky)"><span class="ic">🧩</span><div><h4>Start here: warm-up</h4><p>Match 6 hard words. A quick game!</p></div></a>
+   <a class="extra" href="#" data-go="report" style="--c:var(--lilac)"><span class="ic">🛂</span><div><h4>Get our report</h4><p>A beautiful report with all your answers, to download or print.</p></div></a></div>
+  <section class="stretch"><h3>🛣️ Pip’s road <small>Do the stops in order, or pick the ones you like</small></h3><div class="road five">${M.map(m=>`<a class="stop" href="#" data-go="${m.id}" style="--c:${m.c}">${isDone(m.id)?`<span class="stamp"><span><b>${m.ic}</b>DONE</span></span>`:(started(m.id)?'<span class="started">STARTED</span>':'')}<span class="st">Stop ${M.indexOf(m)+1}</span><span class="ic">${m.ic}</span><h4>${m.name}</h4><p>${m.teaser}</p></a>`).join('')}</div></section>
+  <p class="foot">Made for the Pip course · each stop uses short quotes from real papers and standards, with links to the source</p>`;
+}
+
+function warm(){
+  const order=MATCH.map((_,i)=>i).sort(()=>Math.random()-.5);
+  return `<div class="mhead" style="--c:var(--sky)"><span class="num">🧩</span><h2>Warm-up: hard word or Pip word?</h2></div>
+  <p style="font-weight:700;font-size:19px">Every hard word on the left is something Pip already met. Click a hard word, then click what it means.</p>
+  <div class="panel"><div class="match" id="match"><div class="col"><h4>Hard word</h4>${MATCH.map((m,i)=>`<button class="pick term" data-a="${i}">${esc(m[0])}</button>`).join('')}</div><div class="col"><h4>Pip meaning</h4>${order.map(i=>`<button class="pick" data-b="${i}">${esc(MATCH[i][1])}</button>`).join('')}</div></div><p class="mstat" id="mstat">0 of ${MATCH.length} matched</p></div>
+  <div class="nav2"><a class="b alt" href="#" data-go="home">← Back to the road</a></div>`;
+}
+function bindWarm(){
+  let sel=null,done=0;
+  $('#match').addEventListener('click',e=>{
+    const b=e.target.closest('.pick');if(!b||b.classList.contains('done'))return;
+    if(b.dataset.a!==undefined){document.querySelectorAll('.pick.term').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');sel=b;return}
+    if(!sel||sel.dataset.a!==b.dataset.b){b.classList.add('nope');setTimeout(()=>b.classList.remove('nope'),400);return}
+    sel.classList.add('done');b.classList.add('done');sel.classList.remove('sel');sel=null;done++;boom(b);
+    $('#mstat').innerHTML=done===MATCH.length?'All matched! You already speak expert. 🎉 <a class="b sm" href="#" data-go="home">Pick your first stop →</a>':`${done} of ${MATCH.length} matched`;
+    cur.match=Math.max(cur.match||0,done);flash();
+  });
+}
+
+const STEPS=['Remember Pip','Crack the text','Quick check','Work challenge'];
+function hl(line,jar){
+  let out=esc(line);
+  jar.forEach(([w],i)=>{const e=esc(w);const idx=out.toLowerCase().indexOf(e.toLowerCase());if(idx<0)return;
+    if(out.slice(0,idx).lastIndexOf('<')>out.slice(0,idx).lastIndexOf('>'))return;
+    out=out.slice(0,idx)+`<button class="hw${cur.words[mid()+':'+i]?' got':''}" data-w="${i}">${out.slice(idx,idx+e.length)}</button>`+out.slice(idx+e.length)});
+  return out;
+}
+let curM=null;const mid=()=>curM.id;
+function mission(m){
+  curM=m;const step=cur.step[m.id]||0;
+  return `<div class="mhead" style="--c:${m.c}"><span class="num">${m.ic}</span><div><p class="hand" style="font-size:18px">Stop ${M.indexOf(m)+1} of ${M.length}</p><h2>${m.name}</h2></div><span class="kind">${m.kind}</span></div>
+  <nav class="steps" aria-label="Steps" style="--c:${m.c}">${STEPS.map((s,i)=>`<button class="step${stepOk(m,i)?' ok':''}" data-step="${i}" ${i===step?'aria-current="step"':''}><i>${stepOk(m,i)?'✓':i+1}</i>${s}</button>`).join('')}</nav>
+  <section class="pane" id="pane" style="--c:${m.c}">${pane(m,step)}</section>
+  <div class="nav2"><a class="b alt" href="#" data-go="home">← Back to the road</a><span style="display:flex;gap:10px;flex-wrap:wrap">${step<3?`<button class="b" data-step="${step+1}" style="--c:${m.c}">Next step →</button>`:`<button class="b" id="finish" style="--c:${m.c}">Get our stamp! 🛂</button>`}</span></div>`;
+}
+function stepOk(m,i){return i===0?(cur.step[m.id]||0)>0:i===1?m.jar.every((_,j)=>cur.words[m.id+':'+j]):i===2?cur.quiz[m.id]!=null:(cur.agree[m.id]!=null&&m.qs.some((_,q)=>(cur.a[m.id+'_q'+q]||'').trim()))}
+function pane(m,step){
+  if(step===0)return `<div class="flip" id="flip"><div class="inner"><div class="face front"><span style="font-size:54px">${m.ic}</span><h3>${esc(m.front)}</h3><p class="hand">Talk about it for one minute. Then flip the card!</p><button class="b" id="doflip">Flip the card 🔄</button></div>
+    <div class="face back"><h4>🎒 Remember Pip?</h4>${m.back.map(p=>`<p>${esc(p).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')}</p>`).join('')}<div class="pw"><p class="pwh">🧠 Pip words to remember</p><dl>${m.words.map(w=>`<dt>${esc(w[0])}</dt><dd>${esc(w[1])}</dd>`).join('')}</dl></div><button class="b alt sm" id="unflip">Flip back</button></div></div></div>`;
+  if(step===1){const got=m.jar.filter((_,j)=>cur.words[m.id+':'+j]).length;
+    return `<div class="reader1"><p class="src">📖 The real text · ${m.src.map(x=>`<a href="${x[1]}" target="_blank" rel="noopener">${esc(x[0])}</a>`).join(" · ")}</p>
+    <div class="about"><p><b>👩‍🔬 Who wrote it?</b> ${esc(m.about[0])}</p><p><b>📌 What is it about?</b> ${esc(m.about[1])}</p><p><b>👀 Why read it?</b> ${esc(m.about[2])}</p></div>
+    <div class="crackbar">${pip(56,m.c)}<p class="hand" style="font-size:20px">Read it out loud together. Click a <u>highlighted</u> word to see what it means. Guess first!</p><p class="meter" id="meter">Hard words cracked: ${got} / ${m.jar.length}</p><button class="b sm alt" id="allsimp">🐣 Show all simple versions</button></div>
+    <div class="quote">${m.quote.map((q,qi)=>typeof q==='string'?`<p class="qsrc">${esc(q.slice(2))}</p>`:`<div class="ql"><p>${hl(q[0],m.jar)}</p><button class="simpb" data-simp="${qi}">🐣 Say it simply</button><p class="simple" id="simp${qi}" hidden>${esc(q[1])}</p></div>`).join('')}</div></div>`}
+  if(step===2){const k=cur.quiz[m.id];
+    return `<div class="quiz"><h3>${esc(m.quiz[0])}</h3>${m.quiz[1].map((o,j)=>`<button class="o${k!=null?(j===m.quiz[2]?' right':(j===k?' wrong':'')):''}" data-o="${j}">${esc(o)}</button>`).join('')}<p class="fb" id="qfb">${k!=null?(k===m.quiz[2]?'Yes! ':'Not quite. ')+esc(m.quiz[3]):''}</p></div>`}
+  const ag=cur.agree[m.id];
+  return `<div class="talk"><div class="case"><p class="hand" style="font-size:19px">🎯 Work challenge · practice case</p><h3>${esc(m.case.t)}</h3>${m.case.story.map(p=>`<p class="story">${gl(p)}</p>`).join('')}<div class="facts"><p class="fh">📋 What you need to know</p><ul>${m.case.facts.map(f=>`<li>${gl(f)}</li>`).join('')}</ul></div><p class="goal"><b>🎯 Your goal:</b> ${gl(m.case.goal)}</p><p class="hand" style="font-size:18px">Answer the questions below together. Questions with 🔒 look at it through data protection glasses: they are the tricky ones! Words with a dotted line can be clicked.</p></div>
+   ${m.qs.map((q,i)=>`<div class="q${q[0].startsWith('🔒')?' dp':''}"><label class="ask" for="${m.id}_q${i}"><span>${i+1}</span>${gl(q[0])}</label><details><summary>Need a hint?</summary><p>${esc(q[1])}</p></details><textarea id="${m.id}_q${i}" data-k="${m.id}_q${i}" placeholder="What does your team think?">${esc(cur.a[m.id+'_q'+i]||'')}</textarea></div>`).join('')}
+   <div class="agree"><p class="stmt">🧭 ${esc(m.decide[0])}</p><div class="dec" role="group" aria-label="Team decision">${m.decide[1].map((o,i)=>`<button data-ag="${i}" aria-pressed="${ag===i}"><span>${['🟢','🟡','🔴'][i]}</span>${esc(o)}</button>`).join('')}</div>
+    <label class="ask" for="${m.id}_why" style="font-weight:800">${esc(m.decide[2])}</label><textarea id="${m.id}_why" data-k="${m.id}_why" placeholder="Our reason…">${esc(cur.a[m.id+'_why']||'')}</textarea></div>
+   <div class="q own"><label class="ask" for="${m.id}_own">🙋 A question we still have</label><textarea id="${m.id}_own" data-k="${m.id}_own" placeholder="Something still puzzling us is…">${esc(cur.a[m.id+'_own']||'')}</textarea></div></div>`;
+}
+function bindMission(m){
+  const v=$('#view');
+  v.onclick=e=>{
+    const s=e.target.closest('[data-step]');if(s){cur.step[m.id]=+s.dataset.step;flash();render();window.scrollTo({top:0,behavior:'smooth'});return}
+    if(e.target.id==='doflip'){$('#flip').classList.add('on');return}
+    const sb=e.target.closest('[data-simp]');if(sb){const p=document.getElementById('simp'+sb.dataset.simp);p.hidden=!p.hidden;sb.textContent=p.hidden?'🐣 Say it simply':'🙈 Hide simple version';return}
+    if(e.target.id==='allsimp'){const show=e.target.dataset.on!=='1';document.querySelectorAll('.quote p.simple').forEach(p=>p.hidden=!show);document.querySelectorAll('[data-simp]').forEach(b=>b.textContent=show?'🙈 Hide simple version':'🐣 Say it simply');e.target.dataset.on=show?'1':'0';e.target.textContent=show?'🙈 Hide all simple versions':'🐣 Show all simple versions';return}
+    if(e.target.id==='unflip'){$('#flip').classList.remove('on');return}
+    const g=e.target.closest('.hw2');if(g){e.preventDefault();const nx=g.nextElementSibling;if(nx&&nx.classList.contains('def')){nx.remove()}else{const d=document.createElement('span');d.className='def';d.textContent=GLOSS[+g.dataset.g][1];g.after(d)}return}
+    const h=e.target.closest('.hw');if(h){const j=+h.dataset.w;cur.words[m.id+':'+j]=1;flash();document.querySelectorAll(`.hw[data-w="${j}"]`).forEach(x=>x.classList.add('got'));
+      const nx=h.nextElementSibling;if(nx&&nx.classList.contains('def')){nx.remove()}else{const d=document.createElement('span');d.className='def';d.innerHTML='<b>'+esc(m.jar[j][1])+'</b> '+esc(m.jar[j][2]||'');h.after(d)}const got=m.jar.filter((_,k)=>cur.words[m.id+':'+k]).length;$('#meter').textContent=`Hard words cracked: ${got} / ${m.jar.length}`+(got===m.jar.length?' 🎉':'');refreshSteps(m);return}
+    const o=e.target.closest('.quiz button.o');if(o){const k=+o.dataset.o;cur.quiz[m.id]=k;flash();
+      document.querySelectorAll('.quiz button.o').forEach((b,j)=>{b.classList.remove('right','wrong');if(j===m.quiz[2])b.classList.add('right');else if(j===k)b.classList.add('wrong')});
+      $('#qfb').textContent=(k===m.quiz[2]?'Yes! ':'Not quite. ')+m.quiz[3];if(k===m.quiz[2])boom(o);refreshSteps(m);return}
+    const a=e.target.closest('[data-ag]');if(a){cur.agree[m.id]=+a.dataset.ag;flash();document.querySelectorAll('[data-ag]').forEach(b=>b.setAttribute('aria-pressed',b===a));refreshSteps(m);return}
+    if(e.target.id==='finish'){
+      if(cur.quiz[m.id]==null||cur.agree[m.id]==null||!m.qs.some((_,q)=>(cur.a[m.id+'_q'+q]||'').trim())){
+        celebrate(`<span style="font-size:54px">🙈</span><h2>Almost there!</h2><p style="font-weight:700">To win the stamp: answer the quick check, choose your team’s decision, and type an answer to at least one challenge question.</p><button class="b" id="cclose">OK!</button>`);return}
+      cur.stamps[m.id]=new Date().toISOString();flash();
+      const left=M.filter(x=>!cur.stamps[x.id]).length;
+      celebrate(`<div class="bigstamp"><span><b>${m.ic}</b>${esc(m.name)}</span></div><h2>Stamp won!</h2><p style="font-weight:700">${Object.keys(cur.stamps).length} stamp${Object.keys(cur.stamps).length>1?'s':''} in your passport. ${left?left+' stops left on the road.':'You finished the whole road!'}</p><div class="tools" style="justify-content:center"><a class="b" href="#" data-go="home" id="cclose">Back to the road</a><a class="b alt" href="#" data-go="report" id="cclose2">See our report</a></div>`);
+    }
+  };
+}
+function refreshSteps(m){document.querySelectorAll('.steps .step').forEach((b,i)=>{const ok=stepOk(m,i);b.classList.toggle('ok',ok);b.querySelector('i').textContent=ok?'✓':i+1})}
+function celebrate(html){$('#celebox').innerHTML=html;$('#cele').hidden=false;boom($('#celebox'));$('#cele').onclick=e=>{if(e.target.closest('#cclose,#cclose2')||e.target.id==='cele')$('#cele').hidden=true}}
+
+function report(){
+  const n=Object.keys(cur.stamps).length;
+  return `<div class="mhead" style="--c:var(--lilac)"><span class="num">📄</span><div><p class="hand" style="font-size:18px">Team ${esc(team)}</p><h2>Our report</h2></div></div>
+  <div class="panel"><div class="stamps">${M.map(m=>`<span class="${isDone(m.id)?'':'no'}" title="${esc(m.name)}">${m.ic}</span>`).join('')}</div><p class="hand" style="margin-top:8px">${n} of ${M.length} stamps · ${spent()} minutes so far</p></div>
+  <div class="letter"><p>Before you download: Lina asked us, “What happened to my sentence?” Write her one or two sentences, using what you learned today.</p><textarea data-k="letter" id="letterbox" placeholder="Dear Lina, …">${esc(cur.a.letter||'')}</textarea></div>
+  <div class="tools"><button class="b" id="dl">⬇️ Download our report</button><button class="b alt" id="pr">🖨️ Print or save as PDF</button><button class="b alt" id="cp">📋 Copy as text</button><a class="b alt" href="#" data-go="home">← Back to the road</a></div><p class="msg" id="rmsg"></p>
+  <div class="panel" style="padding:10px"><p class="hand" style="margin:4px 8px 10px">👀 Preview of your report</p><iframe id="repframe" title="Report preview" style="width:100%;height:900px;border:3px solid var(--ink);border-radius:18px;background:#fff"></iframe></div>
+  <div class="panel" style="display:flex;flex-direction:column;gap:10px"><p style="font-weight:700">Want to play again with a new team on this computer? Your team stays saved.</p><div class="tools"><button class="b alt" id="newteam">Start a new team</button></div></div>`;
+}
+function reportDoc(){
+  const e=esc, n=Object.keys(cur.stamps).length, right=M.filter(m=>cur.quiz[m.id]===m.quiz[2]).length;
+  const visited=M.filter(m=>started(m.id)||isDone(m.id));
+  const answered=visited.reduce((t,m)=>t+m.qs.filter((_,i)=>(cur.a[m.id+'_q'+i]||'').trim()).length,0);
+  const ans=v=>v&&v.trim()?`<div class="a">${e(v)}</div>`:`<div class="a empty">No answer</div>`;
+  const col={'var(--pip)':'#ffc933','var(--pink)':'#ff8090','var(--mint)':'#35d3a8','var(--sky)':'#9ad8ff'};
+  const dcol=['#35d3a8','#ffc933','#ff8090'];
+  const css=`@page{size:A4;margin:14mm}:root{--pip:#ffc933;--ink:#1b2140;--card:#fff}*{box-sizing:border-box}body{margin:0;font:500 15px/1.5 Nunito,system-ui,sans-serif;color:#1b2140;background:#e9f5f1 radial-gradient(#c6e2d9 1.4px,transparent 1.6px) 0 0/20px 20px;padding:24px}
+  .w{max-width:820px;margin:auto;display:flex;flex-direction:column;gap:18px}h1,h2,h3{font-family:"Bagel Fat One",system-ui,sans-serif;font-weight:400;margin:0;line-height:1.1}
+  .cover{background:#ffc933;border:4px solid #1b2140;border-radius:28px;box-shadow:8px 8px 0 #1b2140;padding:26px 28px;display:flex;gap:18px;align-items:center}
+  .cover h1{font-size:40px}.cover p{margin:4px 0 0;font-weight:800}.hand{font-family:"Patrick Hand",cursive;font-size:20px}
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.tile{background:#fff;border:3px solid #1b2140;border-radius:18px;padding:12px;text-align:center;box-shadow:4px 4px 0 #1b2140}.tile b{display:block;font:400 30px "Bagel Fat One",sans-serif}.tile span{font-weight:800;font-size:13px}
+  .stamps{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}.stamps span{width:54px;height:54px;border-radius:50%;border:3px dashed #17885a;display:grid;place-items:center;font-size:24px;background:#fff;transform:rotate(-8deg)}.stamps span.no{opacity:.3;filter:grayscale(1);border-color:#888}
+  .stop{background:#fff;border:3px solid #1b2140;border-radius:24px;box-shadow:6px 6px 0 #1b2140;overflow:hidden;break-inside:avoid-page}
+  .sh{padding:14px 20px;border-bottom:3px solid #1b2140;display:flex;gap:12px;align-items:center}.sh .ic{font-size:34px}.sh h2{font-size:26px}.sh small{display:block;font-weight:800;font-size:12px}
+  .sb{padding:16px 20px;display:flex;flex-direction:column;gap:12px}.case{background:#fff4bf;border:2.5px dashed #1b2140;border-radius:16px;padding:10px 14px}.case b{font-family:"Bagel Fat One",sans-serif;font-weight:400;font-size:18px}
+  .dec{border:3px solid #1b2140;border-radius:16px;padding:10px 14px}.dec .t{font-weight:900;font-size:16px}.lbl{font-weight:900;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#525a80}
+  .qa{display:flex;flex-direction:column;gap:4px;break-inside:avoid}.q{font-weight:800}.q.dp::before{content:"🔒 ";}.a{background:#e9f5f1;border-left:5px solid #1b2140;border-radius:0 12px 12px 0;padding:8px 12px;white-space:pre-wrap}.a.empty{color:#888;font-style:italic;background:#f4f4f4}
+  .meta{display:flex;gap:10px;flex-wrap:wrap}.chip{font-weight:800;font-size:13px;border:2px solid #1b2140;border-radius:999px;padding:2px 10px;background:#fff}
+  .letter{background:#fff4bf;border:3px solid #1b2140;border-radius:6px 24px 24px 24px;padding:18px 22px;box-shadow:6px 6px 0 #1b2140}.letter p{font:400 22px/1.4 "Patrick Hand",cursive;margin:6px 0 0;white-space:pre-wrap}
+  .foot{text-align:center;font-weight:700;color:#525a80;font-size:13px}@media print{body{background:#fff;padding:0}.stop,.cover,.tile,.letter{box-shadow:none}}`;
+  const pipSvg=pip(86);
+  const body=`<div class="w"><div class="cover">${pipSvg}<div><p class="hand">Pip reads the rulebook · team report</p><h1>${e(team)}</h1><p>${new Date().toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'})} · ${spent()} minutes on the road</p></div></div>
+  <div class="tiles"><div class="tile"><b>${n}/${M.length}</b><span>🛂 stamps</span></div><div class="tile"><b>${cur.match||0}/${MATCH.length}</b><span>🧩 warm-up words</span></div><div class="tile"><b>${right}</b><span>⚡ quick checks right</span></div><div class="tile"><b>${answered}</b><span>💬 questions answered</span></div></div>
+  <div class="stamps">${M.map(m=>`<span class="${isDone(m.id)?'':'no'}">${m.ic}</span>`).join('')}</div>
+  ${visited.length?visited.map(m=>{const c=col[m.c]||'#ffc933',k=cur.quiz[m.id],d=cur.agree[m.id];return `<section class="stop"><div class="sh" style="background:${c}"><span class="ic">${m.ic}</span><div><small>STOP ${M.indexOf(m)+1}${isDone(m.id)?' · STAMP WON ✓':''}</small><h2>${e(m.name)}</h2></div></div><div class="sb">
+   <div class="meta"><span class="chip">📖 ${e(srcNames(m))}</span><span class="chip">⚡ Quick check: ${k==null?'not answered':(k===m.quiz[2]?'right ✓':'not quite')}</span><span class="chip">🔍 ${m.jar.filter((_,j)=>cur.words[m.id+':'+j]).length}/${m.jar.length} hard words cracked</span></div>
+   <div class="case"><span class="lbl">🎯 Work challenge</span><br><b>${e(m.case.t)}</b><div>${e(m.case.story.join(' '))}</div><div style="margin-top:6px"><span class="lbl">Goal</span> ${e(m.case.goal)}</div></div>
+   ${m.qs.map((q,i)=>`<div class="qa"><div class="q${q[0].startsWith('🔒')?' dp':''}">${i+1}. ${e(q[0].replace(/^🔒\s*/,''))}</div>${ans(cur.a[m.id+'_q'+i])}</div>`).join('')}
+   <div class="dec" style="background:${d==null?'#f4f4f4':dcol[d]+'55'}"><span class="lbl">🧭 ${e(m.decide[0])}</span><div class="t">${d==null?'No decision yet':['🟢','🟡','🔴'][d]+' '+e(m.decide[1][d])}</div>${(cur.a[m.id+'_why']||'').trim()?`<div style="margin-top:6px"><span class="lbl">${e(m.decide[2])}</span><div class="a">${e(cur.a[m.id+'_why'])}</div></div>`:''}</div>
+   <div class="qa"><div class="q">🙋 A question we still have</div>${ans(cur.a[m.id+'_own'])}</div></div></section>`}).join(''):'<p class="hand" style="text-align:center">No stops visited yet.</p>'}
+  <div class="letter"><span class="lbl">💌 Our letter to Lina</span><p>${(cur.a.letter||'').trim()?e(cur.a.letter):'Not written yet.'}</p></div>
+  <p class="foot">Made with Pip reads the rulebook · Pip, Quill &amp; Dash course</p></div>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pip report · ${e(team)}</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@500;700;800;900&family=Patrick+Hand&display=swap"><style>${css}</style></head><body>${body}</body></html>`;
+}
+function reportText(){
+  const L=['Totally disagree','Disagree','Not sure','Agree','Totally agree'];
+  const o=[`PIP READS THE RULEBOOK · Team report`,`Team: ${team}`,`Date: ${new Date().toLocaleString()}`,`Stamps: ${Object.keys(cur.stamps).length} of ${M.length} · Warm-up: ${cur.match||0}/${MATCH.length} · Time spent: ${spent()} min`,''];
+  M.filter(m=>started(m.id)||isDone(m.id)).forEach(m=>{o.push(`== STOP ${M.indexOf(m)+1}: ${m.name.toUpperCase()} (${srcNames(m)})`,`Work challenge: ${m.case.t}. ${m.case.story.join(' ')}`,`Goal: ${m.case.goal}`);
+    m.qs.forEach((q,i)=>o.push(`Q${i+1}. ${q[0]}`,`→ ${cur.a[m.id+'_q'+i]||'(no answer)'}`));o.push(`Decision: ${cur.agree[m.id]!=null?m.decide[1][cur.agree[m.id]]:'(none)'}`,`Why: ${cur.a[m.id+'_why']||'(no reason given)'}`,`A question we still have: ${cur.a[m.id+'_own']||'(none)'}`,`Quick check: ${cur.quiz[m.id]==null?'not answered':(cur.quiz[m.id]===m.quiz[2]?'right':'not quite')}`,'')});
+  o.push('LETTER TO LINA',cur.a.letter||'(not written)');return o.join('\n');
+}
+function bindReport(){
+  const fr=$('#repframe');const refresh=()=>{try{fr.srcdoc=reportDoc()}catch(e){}};refresh();
+  $('#letterbox').addEventListener('input',()=>{clearTimeout(bindReport.t);bindReport.t=setTimeout(refresh,600)});
+  $('#dl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([reportDoc()],{type:'text/html'}));a.download=`pip-report-${team.replace(/[^\w-]+/g,'-')}.html`;document.body.appendChild(a);a.click();a.remove();$('#rmsg').textContent='Downloaded! Open the file to see your report. You can print it or save it as PDF from there.'};
+  $('#pr').onclick=()=>{try{refresh();setTimeout(()=>{fr.contentWindow.focus();fr.contentWindow.print()},400)}catch(e){$('#rmsg').textContent='Printing is blocked here. Download the report, open it, and print from there.'}};
+  $('#cp').onclick=()=>{navigator.clipboard.writeText(reportText()).then(()=>$('#rmsg').textContent='Copied! Paste it into an email or a doc.').catch(()=>$('#rmsg').textContent='Copy didn’t work here. Try Download.')};
+  $('#newteam').onclick=function(){if(!this.dataset.c){this.dataset.c=1;this.textContent='Sure? Click again';setTimeout(()=>{this.textContent='Start a new team';delete this.dataset.c},3000);return}showGate()};
+}
+/* ---------- router ---------- */
+let view='home';
+function go(v){if(!cur)return;view=v;$('#cele').hidden=true;render();window.scrollTo({top:0})}
+document.addEventListener('click',e=>{const a=e.target.closest('[data-go]');if(!a)return;e.preventDefault();go(a.dataset.go)});
+function render(){
+  const h=view,v=$('#view');v.onclick=null;
+  const m=M.find(x=>x.id===h);
+  if(m){v.innerHTML=mission(m);bindMission(m);}
+  else if(h==='warm'){v.innerHTML=warm();bindWarm();}
+  else if(h==='report'){v.innerHTML=report();bindReport()}
+  else{v.innerHTML=home()}
+}
+
+
+/* autosave */
+let st;document.addEventListener('input',e=>{const k=e.target.dataset&&e.target.dataset.k;if(!k||!cur)return;cur.a[k]=e.target.value;clearTimeout(st);st=setTimeout(()=>{flash();if(curM&&view===curM.id)refreshSteps(curM)},350)});
+
+/* timer: counts up from when the team started */
+function tick(){if(!cur||!cur.startedAt)return;const t=Math.max(0,Math.floor((Date.now()-new Date(cur.startedAt))/1000));
+  const h=Math.floor(t/3600),m=Math.floor(t%3600/60),x=t%60;$('#clock').textContent='⏱ '+(h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0')}
+setInterval(tick,1000);
+const spent=()=>cur&&cur.startedAt?Math.round((Date.now()-new Date(cur.startedAt))/60000):0;
+
+function boom(el){
+  try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)return}catch(e){}
+  const r=el.getBoundingClientRect();
+  ['⭐','✨','🐱','💛','🎉'].forEach((s,i)=>{const d=document.createElement('span');d.className='confetti';d.textContent=s;d.style.left=(r.left+r.width/2+(i-2)*24)+'px';d.style.top=(r.top+10)+'px';document.body.appendChild(d);setTimeout(()=>d.remove(),1100)});
+}
+showGate();
+</script>
+</body>
+</html>
