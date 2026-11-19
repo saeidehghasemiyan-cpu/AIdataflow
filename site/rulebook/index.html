@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Pip Reads the Rulebook</title>
+<title>Pip Reads Real Articles</title>
 <meta name="description" content="A 60-minute team game: travel Pip's road and crack real expert texts about AI and data.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@500;700;800;900&family=Patrick+Hand&display=swap">
@@ -280,7 +280,7 @@ textarea::placeholder{color:var(--muted);font-weight:600}
 <div class="celebrate" id="cele" hidden><div class="box" id="celebox"></div></div>
 
 <header class="bar"><div class="in">
-  <a class="brand" href="#" data-go="home">Pip reads the rulebook</a>
+  <a class="brand" href="#" data-go="home">Pip reads real articles</a>
   <span class="tm" id="tmname"></span>
   <span class="pass" id="passcount">🛂 0 stamps</span><a class="b sm" href="#" data-go="report" style="--c:var(--lilac)">📄 Get our report</a>
   <div class="clock" title="Time since your team started"><b id="clock">⏱ 0:00</b><span class="saved" id="saved" aria-live="polite"></span></div>
@@ -496,7 +496,7 @@ function enter(n){team=n;cur=all[n];for(const k of ['a','quiz','agree','words','
 /* ---------- views ---------- */
 function home(){
   const n=Object.keys(cur.stamps).length;
-  return `<section class="hero"><div><p class="hand">A team game · 5 stops</p><h1>Pip reads the <em>rulebook</em></h1>
+  return `<section class="hero"><div><p class="hand">A team game · 5 stops</p><h1>Pip reads real <em>articles</em></h1>
    <p class="lead">Experts write about AI with very hard words. But you travelled with Pip, so you already know them!</p></div>
    <div class="pipbox"><div class="bubble">${n?`${n} stamp${n>1?'s':''} already!<br>Keep going!`:'Pick a stop on<br>my road!'}</div>${pip(118)}</div></section>
   <div class="panel" style="display:flex;flex-direction:column;gap:12px"><h2 style="font-size:28px">How to play</h2>
@@ -619,7 +619,7 @@ function reportDoc(){
   .letter{background:#fff4bf;border:3px solid #1b2140;border-radius:6px 24px 24px 24px;padding:18px 22px;box-shadow:6px 6px 0 #1b2140}.letter p{font:400 22px/1.4 "Patrick Hand",cursive;margin:6px 0 0;white-space:pre-wrap}
   .foot{text-align:center;font-weight:700;color:#525a80;font-size:13px}@media print{body{background:#fff;padding:0}.stop,.cover,.tile,.letter{box-shadow:none}}`;
   const pipSvg=pip(86);
-  const body=`<div class="w"><div class="cover">${pipSvg}<div><p class="hand">Pip reads the rulebook · team report</p><h1>${e(team)}</h1><p>${new Date().toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'})} · ${spent()} minutes on the road</p></div></div>
+  const body=`<div class="w"><div class="cover">${pipSvg}<div><p class="hand">Pip reads real articles · team report</p><h1>${e(team)}</h1><p>${new Date().toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'})} · ${spent()} minutes on the road</p></div></div>
   <div class="tiles"><div class="tile"><b>${n}/${M.length}</b><span>🛂 stamps</span></div><div class="tile"><b>${cur.match||0}/${MATCH.length}</b><span>🧩 warm-up words</span></div><div class="tile"><b>${right}</b><span>⚡ quick checks right</span></div><div class="tile"><b>${answered}</b><span>💬 questions answered</span></div></div>
   <div class="stamps">${M.map(m=>`<span class="${isDone(m.id)?'':'no'}">${m.ic}</span>`).join('')}</div>
   ${visited.length?visited.map(m=>{const c=col[m.c]||'#ffc933',k=cur.quiz[m.id],d=cur.agree[m.id];return `<section class="stop"><div class="sh" style="background:${c}"><span class="ic">${m.ic}</span><div><small>STOP ${M.indexOf(m)+1}${isDone(m.id)?' · STAMP WON ✓':''}</small><h2>${e(m.name)}</h2></div></div><div class="sb">
@@ -629,12 +629,12 @@ function reportDoc(){
    <div class="dec" style="background:${d==null?'#f4f4f4':dcol[d]+'55'}"><span class="lbl">🧭 ${e(m.decide[0])}</span><div class="t">${d==null?'No decision yet':['🟢','🟡','🔴'][d]+' '+e(m.decide[1][d])}</div>${(cur.a[m.id+'_why']||'').trim()?`<div style="margin-top:6px"><span class="lbl">${e(m.decide[2])}</span><div class="a">${e(cur.a[m.id+'_why'])}</div></div>`:''}</div>
    <div class="qa"><div class="q">🙋 A question we still have</div>${ans(cur.a[m.id+'_own'])}</div></div></section>`}).join(''):'<p class="hand" style="text-align:center">No stops visited yet.</p>'}
   <div class="letter"><span class="lbl">💌 Our letter to Lina</span><p>${(cur.a.letter||'').trim()?e(cur.a.letter):'Not written yet.'}</p></div>
-  <p class="foot">Made with Pip reads the rulebook · Pip, Quill &amp; Dash course</p></div>`;
+  <p class="foot">Made with Pip reads real articles · Pip, Quill &amp; Dash course</p></div>`;
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pip report · ${e(team)}</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@500;700;800;900&family=Patrick+Hand&display=swap"><style>${css}</style></head><body>${body}</body></html>`;
 }
 function reportText(){
   const L=['Totally disagree','Disagree','Not sure','Agree','Totally agree'];
-  const o=[`PIP READS THE RULEBOOK · Team report`,`Team: ${team}`,`Date: ${new Date().toLocaleString()}`,`Stamps: ${Object.keys(cur.stamps).length} of ${M.length} · Warm-up: ${cur.match||0}/${MATCH.length} · Time spent: ${spent()} min`,''];
+  const o=[`PIP READS REAL ARTICLES · Team report`,`Team: ${team}`,`Date: ${new Date().toLocaleString()}`,`Stamps: ${Object.keys(cur.stamps).length} of ${M.length} · Warm-up: ${cur.match||0}/${MATCH.length} · Time spent: ${spent()} min`,''];
   M.filter(m=>started(m.id)||isDone(m.id)).forEach(m=>{o.push(`== STOP ${M.indexOf(m)+1}: ${m.name.toUpperCase()} (${srcNames(m)})`,`Work challenge: ${m.case.t}. ${m.case.story.join(' ')}`,`Goal: ${m.case.goal}`);
     m.qs.forEach((q,i)=>o.push(`Q${i+1}. ${q[0]}`,`→ ${cur.a[m.id+'_q'+i]||'(no answer)'}`));o.push(`Decision: ${cur.agree[m.id]!=null?m.decide[1][cur.agree[m.id]]:'(none)'}`,`Why: ${cur.a[m.id+'_why']||'(no reason given)'}`,`A question we still have: ${cur.a[m.id+'_own']||'(none)'}`,`Quick check: ${cur.quiz[m.id]==null?'not answered':(cur.quiz[m.id]===m.quiz[2]?'right':'not quite')}`,'')});
   o.push('LETTER TO LINA',cur.a.letter||'(not written)');return o.join('\n');
